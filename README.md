@@ -74,7 +74,7 @@ The campaign didn't find the Diamond. It did something arguably more valuable: i
 
 ### The Freedom Theorem
 
-Every code at excess 1 — and we found **109+ distinct ones** from scratch, on different "continents" of the search space — has exactly the same weight distribution. The algebra forces it. One histogram. One shape. E1 is a prisoner.
+Every code at excess 1 — and we found **200+ distinct ones** from scratch, on different "continents" of the search space — has exactly the same weight distribution. The algebra forces it. One histogram. One shape. E1 is a prisoner.
 
 The Diamond, if it exists, has **six degrees of freedom** in its weight distribution. It can take billions of different shapes. An exhaustive census confirmed approximately **10⁹ valid MacWilliams-compatible distributions**. The Diamond doesn't look like E1. It never did. Every engine that tried to sculpt E1's histogram was searching the wrong region of space.
 
