@@ -10,7 +10,7 @@ He didn't find it. But what he found instead — and what he proved along the wa
 
 ## The Matrix
 
-This is SEED_E1★. Six rows, twenty-two columns, four symbols. Found on 24 March 2026 by engine ESTRELLA RAYO v3. It is the closest anyone has ever come to a [22,6,13]₄ code — a mathematical object that may or may not exist, and that nobody had seriously hunted in 25 years.
+This is SEED_E1★. Six rows, twenty-two columns, four symbols. Found on 24 March 2026 by engine ESTRELLA RAYO v3. It is the closest anyone has ever published (as far as I know) to a [22,6,13]₄ code — a mathematical object that may or may not exist, and that nobody had seriously hunted in 25 years.
 
 ```
 1 1 0 1 1 0 0 1 0 0 0 1 1 0 1 1 0 1 1 1 0 1
