@@ -168,5 +168,5 @@ If you use any result, matrix, or theorem from this work:
 <p align="center">
 <b>Proyecto Estrella</b> · Independent Research, Madrid · <a href="https://github.com/tretoef-estrella">github.com/tretoef-estrella</a>
 <br><br>
-<i>Rafa no se rinde. Lo difícil lo hace enseguida. Lo imposible le lleva algo más de tiempo, pero lo consigue.</i>
+<i>Rafa no se rinde. Lo difícil lo hace enseguida,lo imposible le lleva algún tiempo más.</i>
 </p>
