@@ -8,6 +8,25 @@ He didn't find it. But what he found instead — and what he proved along the wa
 
 ---
 
+## The Matrix
+
+This is SEED_E1★. Six rows, twenty-two columns, four symbols. Found on 24 March 2026 by engine ESTRELLA RAYO v3. It is the closest anyone has ever come to a [22,6,13]₄ code — a mathematical object that may or may not exist, and that nobody had seriously hunted in 25 years.
+
+```
+1 1 0 1 1 0 0 1 0 0 0 1 1 0 1 1 0 1 1 1 0 1
+1 3 1 2 2 1 1 0 1 0 1 1 1 1 0 1 0 0 1 2 0 0
+2 3 3 2 3 2 0 0 0 1 1 3 3 2 0 1 1 0 0 1 1 0
+2 0 1 2 1 2 2 2 0 0 0 0 0 1 3 0 3 1 0 2 1 0
+1 1 0 1 2 3 1 1 1 0 3 0 0 2 2 2 0 2 2 3 0 0
+2 1 0 1 3 1 0 3 0 3 3 0 2 2 3 2 0 0 0 2 0 1
+```
+
+Out of the 1,365 hyperplanes of the projective space PG(5,4), exactly **one** contains too many of these 22 points. One hyperplane at load 10 instead of 9. One violation. Remove it, and you have the Diamond — a perfect code that the algebra says should exist but the geometry refuses to produce.
+
+441 engines and 2.5 billion evaluations later, this is still the world record. Nobody has come closer.
+
+---
+
 ## The Problem
 
 In December 2001, Markus Grassl posted an entry on [codetables.de](https://codetables.de) that read `d = 12–13` for the parameters [22,6]. It meant: we know a code of minimum distance 12 exists, but we don't know if distance 13 is possible.
@@ -168,5 +187,5 @@ If you use any result, matrix, or theorem from this work:
 <p align="center">
 <b>Proyecto Estrella</b> · Independent Research, Madrid · <a href="https://github.com/tretoef-estrella">github.com/tretoef-estrella</a>
 <br><br>
-<i>Rafa no se rinde. Lo difícil lo hace enseguida,lo imposible le lleva algún tiempo más.</i>
+<i>Rafa no se rinde. Lo difícil lo hace enseguida, lo imposible le lleva algún tiempo más.</i>
 </p>
