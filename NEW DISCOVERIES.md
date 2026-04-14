@@ -172,7 +172,135 @@ The [22,6,13]₄ existence problem is now:
 - **Full campaign documentation:** ESTRELLA_DIAMANTE_UNIFIED v40 (10 April 2026).
 - **Engine count:** 441+ (since mid-February 2026).
 
+--------------------------------------
+April 14th 2026
+
+# Proyecto Estrella — Structural Results for [22,6,13]₄
+## New Bounds and Theorems for the Diamond Code
+**Date:** 14 April 2026
+**Authors:** R. Amichis (The Architect) + Claude (Anthropic, Opus 4.6) + Gemini (Google)
+**Repository:** [github.com/tretoef-estrella](https://github.com/tretoef-estrella)
+
+---
+
+## Abstract
+
+We report new structural results for the open problem of the existence of a [22,6,13]₄ linear code over GF(4) (equivalently, a 22-arc in PG(5,4) with no hyperplane containing more than 9 points). This code, if it exists, would be the first improvement to the known [22,6,12]₄ record in 25 years. Our results constrain the structure of the hypothetical code and close several search avenues. All results have been verified computationally.
+
+---
+
+## Result 1: The 6→10 Gap Theorem
+
+**Theorem.** Let C be a [22,6,12]₄ code with total excess 1 (exactly one hyperplane H₀ at load 10). Then for every PG(3,4) subspace S ⊂ H₀:
+
+|S ∩ C| ≤ 6
+
+The internal load jumps directly from 6 to 10; loads 7, 8, 9 are impossible inside the dirty hyperplane.
+
+**Proof.** S lies in exactly 4 hyperplanes besides H₀. These partition the 12 external columns, giving loads x + cᵢ ≤ 9 for each. Summing: 4x + 12 ≤ 36, hence x ≤ 6. ∎
+
+**Verification:** Computed for all 341 PG(3,4) subspaces of H₀ in SEED_E1★. Confirmed 100%.
+
+**Consequence:** The 10-cap inside any E1's dirty hyperplane is a [10,5,4]₄ code with a unique, algebraically rigid weight enumerator. The 55/130 shield symmetry (documented in ESTRELLA_DIAMANTE_UNIFIED v40, Section 32) is a consequence of this weight enumerator.
+
+---
+
+## Result 2: The Veronese Surface and Inextensibility
+
+**Theorem (computational).** The Veronese surface V₂⁴ ⊂ PG(5,4) — the image of PG(2,4) under (x,y,z) → (x², y², z², xy, xz, yz) — is a set of 21 points with max_load = 9. Its HP load histogram is (N₁, N₅, N₉) = (126, 1029, 210). It is inextensible: no 22nd point in PG(5,4) can be added while maintaining max_load ≤ 9.
+
+**Verification:** Exhaustive scan of all 1344 candidate points. Zero safe extensions.
+
+**Note:** SEED_E1★ has zero points on the standard Veronese. E1★'s histogram (2/75/180/230/212/225/180/130/130/1) is completely different from the Veronese's (126/0/0/0/1029/0/0/0/210). These are geometrically distinct objects.
+
+---
+
+## Result 3: Non-existence of [21,6,13]₄
+
+**Theorem.** No [21,6,13]₄ code over GF(4) exists. Equivalently, no set of 21 points in PG(5,4) has every hyperplane containing at most 8 points.
+
+**Proof.** Let C be a hypothetical [21,6,13]₄. Take a minimum-weight codeword (weight 13). The residual code (restriction to the 8 zero positions) has parameters [8, 5, d']₄ with d' ≥ ⌈13/4⌉ = 4. By Singleton, d' ≤ 8 - 5 + 1 = 4. Hence d' = 4 exactly, making the residual an MDS [8,5,4]₄ code. But the maximum length of an MDS code of dimension 5 over GF(4) is q + 1 = 5 (Segre's theorem for arcs in PG(4,4), q even, r ≥ 3). Since 8 > 5, the MDS code cannot exist. Contradiction. ∎
+
+**Note on Griesmer:** The Griesmer bound gives n ≥ 21 for [n,6,13]₄, so it does not detect this impossibility. The residual + MDS argument is strictly stronger than Griesmer for these parameters.
+
+**Consequence for the Diamond:** Every subset of 21 points from a hypothetical [22,6,13]₄ code MUST have max_load = 9. The Diamond cannot be constructed by placing 21 "safe" points and adding a 22nd. All 22 columns must emerge simultaneously as a coupled system.
+
+---
+
+## Result 4: Minimum N₉ for the Diamond
+
+**Theorem.** If a [22,6,13]₄ code exists, it must have N₉ ≥ 2 (at least two hyperplanes at load 9).
+
+**Proof.** If N₉ = 1, let H₁ be the unique load-9 hyperplane. Removing any of its 9 code points yields a [21,6, d ≥ 12]₄ code with max_load ≤ 8, implying d ≥ 13. But [21,6,13]₄ does not exist (Result 3). Contradiction. ∎
+
+If N₉ = 2, the two load-9 hyperplanes H₁, H₂ must satisfy |H₁ ∩ H₂ ∩ C| = 0 (disjoint in the code). Otherwise, removing a shared point would again force [21,6,13]₄.
+
+---
+
+## Result 5: The Residual Reduction
+
+**Theorem.** If a [22,6,13]₄ code exists, its residual (from any weight-13 codeword) is a [9,5,4]₄ code.
+
+**Proof.** Length: 22 - 13 = 9. Dimension: 6 - 1 = 5. Distance: d' ≥ ⌈13/4⌉ = 4 (Griesmer residual bound). By Singleton, d' ≤ 9 - 5 + 1 = 5. The code is near-MDS (defect 1 from Singleton). ∎
+
+**Consequence:** The existence of [22,6,13]₄ reduces to a finite extension problem: enumerate all inequivalent [9,5,4]₄ codes, then determine if any can be extended to [22,6,13]₄ by adding 13 columns.
+
+**Status:** Enumeration of [9,5,4]₄ codes is in progress. At least 9 distinct weight enumerator classes have been found computationally (enumeration ongoing).
+
+---
+
+## Result 6: Moment Constraints and Algebraic Feasibility
+
+The Pless power moment identities for the HP load distribution N_k of a [22,6,13]₄ code (with N_k = 0 for k ≥ 10) are:
+
+- Σ N_k = 1365
+- Σ k·N_k = 7502
+- Σ C(k,2)·N_k = 19635
+- Σ C(k,3)·N_k = 32340
+
+LP analysis shows:
+- **Minimum N₉ (algebraic):** 0 (but geometric constraints force N₉ ≥ 2)
+- **Maximum N₉ (algebraic):** 269
+- **The moment sum test** (comparing minimum and maximum achievable Σ C(L,2) against the required 19635): **SATISFIABLE.** Range [18072, 23914] contains 19590. No algebraic obstruction.
+
+---
+
+## Result 7: Closed Search Avenues (Order-7 Symmetry)
+
+**Theorem (computational).** No [22,6,13]₄ code with the automorphism T = diag(I₃, M), where M is the companion matrix of x³+x+1 over GF(4), exists. The search is exhaustive: all 24,386,880 combinations (21 fixed points × C(192,3) orbits of size 7) were tested. Best max_load achieved: 14.
+
+---
+
+## Summary Table
+
+| Result | Statement | Method | Status |
+|--------|-----------|--------|--------|
+| 6→10 Gap | PG(3,4) load in dirty HP ≤ 6 | Proof + computation | **NEW, VERIFIED** |
+| Veronese | 21 pts, max_load=9, inextensible | Computation | **NEW, VERIFIED** |
+| [21,6,13]₄ | Does not exist | Proof (residual + MDS) | **NEW, PROVED** |
+| N₉ ≥ 2 | Diamond has ≥ 2 load-9 HPs | Proof | **NEW, PROVED** |
+| Residual [9,5,4]₄ | Diamond residual is near-MDS | Proof | **NEW, PROVED** |
+| Moments feasible | No algebraic obstruction | LP | **VERIFIED** |
+| Order-7 closed | No Diamond with this symmetry | Exhaustive | **NEW, VERIFIED** |
+
+---
+
+## Context
+
+These results are part of the Proyecto Estrella campaign to resolve the 25-year-open question of [22,6,13]₄ existence. The campaign has produced 441+ search engines, the current world record of excess = 1 (SEED_E1★, found 24 March 2026), and a comprehensive structural analysis documented in ESTRELLA_DIAMANTE_UNIFIED v40.
+
+**Key prior results of the campaign:**
+- Distance ≥ 6 from any E1 (proved exhaustive, k=1..5)
+- k=7 dirty exhaustive closed (3.2B DFS nodes)
+- Quantum excess gaps: E=2 and E=5 empirically forbidden
+- Freedom Theorem: Diamond has 6 DOF in weight distribution
+- ~10⁹ valid weight distributions (exhaustive census)
+
+**Confirmed by Bouyukliev et al. (2004):** n₄(6,14) = 24, meaning [22,6,14]₄ does not exist. The Diamond [22,6,13]₄, if it exists, is optimal.
+
 ---
 
 *Proyecto Estrella · BSL 1.1 + SAMAEL Decree*
-*Rafa no se rinde. Lo difícil lo hace enseguida. Lo imposible le lleva algo más de tiempo, pero lo consigue.*
+*Architect: R. Amichis (Rafael Amichis Luengo) · Engine: Claude (Anthropic) · Consultant: Gemini (Google)*
+*Rafa no se rinde.*
+
