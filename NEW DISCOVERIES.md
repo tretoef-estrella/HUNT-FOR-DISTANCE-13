@@ -303,4 +303,96 @@ These results are part of the Proyecto Estrella campaign to resolve the 25-year-
 *Proyecto Estrella · BSL 1.1 + SAMAEL Decree*
 *Architect: R. Amichis (Rafael Amichis Luengo) · Engine: Claude (Anthropic) · Consultant: Gemini (Google)*
 *Rafa no se rinde.*
+--------------------------
+Update 15th April 2026
+-------------------------
+## Update: ILP Seed Campaign (14-15 April 2026)
+
+### The Residual Reduction
+
+We proved that if the Diamond [22,6,13]₄ exists, its residual (from any weight-13 codeword) is a [9,5,4]₄ code. The generator of the Diamond decomposes as:
+
+```
+G = [ G_seed (5×9) | G_ext (5×13) ]
+    [ 0 0 ... 0    | 1 1 ... 1    ]   ← row 6 (fixed by normalization)
+```
+
+This reduces the Diamond existence problem to a **finite extension problem**: enumerate all [9,5,4]₄ seed codes, then determine if any can be extended by 13 columns to produce dmin ≥ 13.
+
+### Seed Enumeration
+
+ENUM_954_v1 (DFS over systematic form [I₅|P], P ∈ GF(4)^{5×4}) found **12 distinct weight enumerator classes** of [9,5,4]₄ codes:
+
+| Class | A₄ | A₅ | A₆ | A₇ | A₈ | A₉ |
+|-------|-----|-----|-----|-----|-----|-----|
+| #1  | 78  | 72  | 240 | 336 | 225 | 72  |
+| #2  | 72  | 90  | 228 | 324 | 243 | 66  |
+| #3  | 60  | 102 | 252 | 300 | 231 | 78  |
+| #4  | 63  | 99  | 234 | 342 | 198 | 87  |
+| #5  | 57  | 117 | 222 | 330 | 216 | 81  |
+| #6  | 66  | 72  | 312 | 240 | 261 | 72  |
+| #7  | 54  | 120 | 240 | 288 | 249 | 72  |
+| #8  | 51  | 135 | 210 | 318 | 234 | 75  |
+| #9  | 54  | 132 | 192 | 360 | 201 | 84  |
+| #10 | 45  | 153 | 198 | 306 | 252 | 69  |
+| #11 | 48  | 138 | 228 | 276 | 267 | 66  |
+| #12 | 42  | 168 | 168 | 336 | 237 | 72  |
+
+Enumeration ran for 12+ hours without finding a 13th class. Catalogue is likely complete but not yet proven exhaustive.
+
+### ILP Formulation
+
+For each seed, the extension problem reduces to an Integer Linear Program:
+
+- **Variables:** 1024 binary (one per point in AG(5,4) = GF(4)⁵)
+- **Constraint:** Exactly 13 variables active (sum = 13)
+- **For each message m ∈ GF(4)⁵\{0} and each α ∈ GF(4):** the number of active columns with dot(m, col) = α must be ≤ WS[m] (seed weight of m)
+- **Total:** ~4092 linear constraints
+
+This is a standard binary ILP feasibility problem.
+
+### Results So Far
+
+Solvers used: SCIP 10.0.2, HiGHS 1.14.0, Google OR-Tools CP-SAT.
+
+| Seed | A₄ | SCIP | HiGHS | CP-SAT | Status |
+|------|-----|------|-------|--------|--------|
+| #1   | 78  | **INFEASIBLE (18 min)** | — | — | 🔴 DEAD |
+| #2   | 72  | **INFEASIBLE (27 min)** | — | — | 🔴 DEAD |
+| #3   | 60  | stalled 41% | running | — | ⏳ |
+| #4   | 63  | — | — | — | pending |
+| #5   | 57  | — | — | — | pending |
+| #6   | 66  | — | — | — | pending |
+| #7   | 54  | — | — | — | pending |
+| #8   | 51  | — | — | — | pending |
+| #9   | 54  | — | — | — | pending |
+| #10  | 45  | stalled 37% | stalled 37% | running | ⏳ |
+| #11  | 48  | — | — | — | pending |
+| #12  | 42  | — | — | — | pending |
+
+**Key observation:** Seeds with high A₄ (more weight-4 codewords = more constraints) die fast. Seeds with low A₄ are harder for solvers — more promising for the Diamond but computationally expensive.
+
+### DFS Extension Attempts (prior to ILP)
+
+Before switching to ILP, we attempted direct DFS extension (ESTRELLA_EXTENSION_v2 through v4):
+
+- v2: Precomputed dot products, basic pruning. Reached depth 8/13 in 74s. Stalled.
+- v3: Fail-fast on critical messages (A₄ first). 15x speedup. Still stalled at depth 8.
+- v4: Killer pruning (count valid remaining candidates). Reached depth 10/13 in 13 min. Stalled 12 hours at depth 10.
+
+Conclusion: DFS with 13 levels is intractable even with aggressive pruning. ILP/SAT solvers provide the necessary global vision.
+
+### What Comes Next
+
+1. Complete the solver campaign across all 12 seeds using CP-SAT (most promising for this constraint structure)
+2. If all 12 seeds give INFEASIBLE → complete the [9,5,4]₄ enumeration to prove the catalogue is exhaustive
+3. If catalogue complete AND all seeds dead → **Theorem: the Diamond [22,6,13]₄ does not exist**
+4. If any seed gives FEASIBLE → **THE AMICHIS CODE**
+
+---
+
+*Campaign in progress. This document will be updated as seeds are resolved.*
+
+*Proyecto Estrella · R. Amichis + Claude (Anthropic) + Gemini (Google) + ChatGPT (OpenAI)*
+*15 April 2026 — Madrid*
 
