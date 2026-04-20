@@ -577,4 +577,97 @@ Both bugs were fixed in `ESTRELLA_SAT_GEN_v4` (two-pass generation with correct 
 ### Open Question
 
 Whether Kissat can close any `[9,5,4]_4` seed via SAT in a reasonable time budget remains an empirical question, to be answered by running `diamond_s{N}_v4.cnf` through Kissat with timeout 6–12h per seed. Early results pending.
+--------------------------------------------
+More updates. April 20th 2026, afternoon
+-----------------------------------------
+
+---
+
+## Addendum — 20 April 2026 (catalogue refinement via mass formula)
+
+### Mass formula check refutes WE-class exhaustiveness
+
+`ESTRELLA_MASS_COUNT_v4` (bitset DFS over all `[I_5|P]` with dmin=4, stratified
+by (A_4, A_5)) on 20 April 2026 measured `M = 16,455,775,320` systematic
+generators vs the formula prediction `M_pred = 7,081,943,400` under the
+hypothesis of 12 exhaustive Mon(9,4)-orbits. Ratio 20901/8995 ≈ 2.3236.
+
+No alien (A_4, A_5) buckets appeared — the 12 known WE-classes capture all
+existing weight enumerators. But 5 of the 12 buckets show integer-ratio
+EXCESS, with 2 of them resolving to corrected |Aut| values and 3 of them
+revealing hidden Mon-orbit splits within a single weight enumerator.
+
+### Corrected |Aut| values (single-orbit buckets, WE + dual WE suffice)
+
+| Bucket (new idx) | (A_4, A_5) | previous \|Aut\| | corrected \|Aut\| |
+|------------------|-----------|------------------|-------------------|
+| #3 (old #11)     | (48, 138) | 6                | **4**             |
+| #9 (old #4)      | (63, 99)  | 36               | **18**            |
+
+The `VERIFIER_954_v1` and `aut_seed.cpp` computations coincided on the other
+ten values; these two were either missed or double-counted.
+
+### WE-class splits (multiple Mon-orbits with identical WE + dual WE + CWE)
+
+`ESTRELLA_ENUM_954_v2` (fine-invariant canonicalization using full WE and
+dual WE simultaneously) produced only 12 distinct fine-signatures — WE
+and dual WE together do NOT separate the hidden sub-orbits. The following
+three buckets contain multiple genuinely Mon-inequivalent codes sharing
+all first-order invariants:
+
+| Bucket (new idx) | (A_4, A_5) | Σ(1/\|Aut_j\|) | Minimum sub-orbit count |
+|------------------|-----------|----------------|-------------------------|
+| #4               | (51, 135) | 7/12           | 2 (e.g. 3 + 4)          |
+| #5               | (54, 120) | 29/36          | 3 (only 1/2+1/4+1/18)   |
+| #7               | (57, 117) | 7/18           | 2 (e.g. 3 + 18)         |
+
+Direct audit (canonical-under-Mon comparison via S_9 permutation enumeration
+plus greedy column-scale normalization) proved:
+- For bucket #4: C is Mon-equivalent to Frobenius(C) — Frobenius does not
+  produce the split here.
+- For bucket #7: same as above.
+- For bucket #5: C is Mon-inequivalent to Frobenius(C) — at least part of the
+  split corresponds to Frobenius action.
+
+Conclusion: Frobenius partially explains one bucket split but is not the
+universal mechanism. The sub-orbits in #4 and #7 are genuinely Mon-distinct
+codes sharing WE + dual WE + CWE by structural coincidence, not by a simple
+semilinear factor.
+
+### Refined catalogue status
+
+- **9 clean Mon-orbits** confirmed as single-orbit WE-classes with corrected
+  |Aut| (buckets #1, #2, #3, #6, #8, #9, #10, #11, #12 in ENUM_v2 indexing).
+- **3 indeterminate buckets** with 2+ hidden Mon-orbits each (#4, #5, #7).
+- **Minimum catalogue size: 14 Mon-orbits. Maximum estimate: ~18-20.**
+
+### Seed #1 (old) status
+
+SEED_E1's residual seed, corresponding to bucket #12 in ENUM_v2 indexing
+(A_4=78, A_5=72, |Aut|=72) remains a clean single-orbit class. Its prior
+UNSAT closure via SCIP (18 min) remains valid.
+
+### Prior SAT work on seeds #2–#12 (old indexing) is SUSPENDED
+
+All prior CNF generation and partial kissat work on the old catalogue is
+void until sub-orbits are resolved. The new attack plan targets the 8
+remaining clean buckets first (Option B), while ENUM_v3 with direct
+Mon(9,4) canonicalization resolves the 3 FRAC buckets in parallel.
+
+### Priority order for kissat attack (refined catalogue)
+
+By |Aut| descending (more symmetric = faster UNSAT closure via symmetry
+breaking):
+
+1. Bucket #10 (66, 72)  |Aut|=288
+2. Bucket #6  (54, 132) |Aut|=96
+3. Bucket #1  (42, 168) |Aut|=72
+4. Bucket #11 (72, 90)  |Aut|=18
+5. Bucket #9  (63, 99)  |Aut|=18
+6. Bucket #8  (60, 102) |Aut|=6
+7. Bucket #3  (48, 138) |Aut|=4
+8. Bucket #2  (45, 153) |Aut|=3
+
+---
+
 
