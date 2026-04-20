@@ -815,4 +815,115 @@ priority 1); launch kissat on M2 with 6h timeout. If UNSAT returns
 quickly (< 1h), the remaining 7 clean + Frobenius-pair attacks are
 feasible within 1–2 days of wall-clock time on the same machine.
 
+------------------------------
+new update april 20th night
+-------------------------
+
+---
+
+## Addendum — 20 April 2026 night (SCIP stagnation — operational finding)
+
+### Campaign progress summary (end of day 1)
+
+| Label | Status                              | Time      |
+|-------|-------------------------------------|-----------|
+| B12   | ✓ INFEASIBLE (sanity benchmark)     | 419.67s   |
+| B10   | KILLED @ 47% compl (stagnation)     | ~7648s    |
+| B06   | KILLED @ 43% compl (stagnation)     | ~7040s    |
+| B01, B09, B11, B08, B03, B02 | PENDING            | —         |
+
+B12 ran end-to-end under the SCIP 10.0.2 + ILPGEN pipeline and
+returned `problem is solved [infeasible]` in 419.67s, 2.6× faster
+than the original 24 March run (1078s). Pipeline validated.
+
+### Finding F13 (candidate) — SCIP stagnation regime on [9,5,4]_4 seeds
+
+Two subsequent seeds (B10, |Aut|=288; B06, |Aut|=96) exhibited a
+**stagnation regime** after ~2h each:
+
+- Both reached ~43-47% `compl` and stopped advancing.
+- Both had dual bound frozen at 1.0 with no primal bound ever found.
+- Both generated tens of thousands of conflict clauses without
+  dual-bound advance.
+- Node exploration continued (~700 nodes/sec) but `compl` percentage
+  did not advance in the final >30 minutes of each run.
+
+This rules out the naive expectation "higher |Aut| = faster close via
+nauty/sassy symmetry detection". Despite B10 having 4× the symmetry
+of the successful B12, it is structurally harder for branch-and-bound.
+
+**Hypothesis** (unverified): SCIP's cut generation enters a degenerate
+regime where each new cut is weakly redundant with prior cuts,
+preserving LP relaxation value at 1.0 without tightening the dual
+bound. The 4092-affine formulation, while tight enough for B12, may
+admit fractional LP solutions for other seeds that cannot be
+eliminated by standard Chvátal-Gomory or knapsack-cover cuts.
+
+**Status:** F13 is a **candidate** finding: confirmed on 2 of 8
+target seeds. If the pattern repeats on B01, B09, B11, B08, B03, B02,
+it becomes a formal finding. If one or more of those closes in
+reasonable time, F13 becomes "stagnation regime occurs on some seeds
+but not others" and the difference may itself be a structural
+invariant worth studying.
+
+### Retracted claim — "6→10 Gap Theorem as LP cuts"
+
+A proposal was made to add a so-called "6→10 Gap Theorem" as 357
+additional LP cuts to ILPGEN for faster closure. **Review of v40
+confirms this theorem does not exist in the paper in the form
+proposed.** The claim was a conflation with the Distance Theorem
+(§33: Diamond ≥6 from E1★) and related E1-specific results
+(§48, §50, §52). None of these apply to the residual seed extension
+problem (attacking B10, B06, ...) because they describe the geometry
+of E1★ itself, not of arbitrary [9,5,4]_4 → [22,6,13]_4 lifts.
+
+**Retraction recorded.** Future Claude instances must not propose
+"6→10 Gap cuts" to ILPGEN without a rigorous derivation from first
+principles on the residual seed. The v40 theorems §33, §48, §50, §52
+remain valid for their original scope (E1 attack) but are NOT
+available as LP cuts for the seed-residual attack.
+
+### Methodological note — solvers already ruled out
+
+Prior campaigns on the old seed numbering tested HiGHS and CP-SAT
+(OR-Tools) and found them slower than SCIP. Gurobi is declined by
+Rafa (licensing / preference). Kissat has an encoding-fragility
+history with cardinality exactly-k over 1024 variables (see SATGEN5
+bug producing spurious single-x SAT on B12). **These alternatives
+are ruled out for the current campaign and should not be retested
+unless a new structural reason emerges.**
+
+### FORENSIC_E1 — exercise of validation (not a new finding)
+
+On 20 April night, an attempt was made to apply Sobol-FORENSIC
+methodology to 94 known [22,6,12]_4 E1 records. The analysis revealed
+14 "core" column vectors present in 100% of records and 4 distinct
+projective multisets. **These findings were already documented in
+v40 §41** (12 clean cols = skeleton, 4 E1 uniques differ only in
+8 of 10 dirty positions, D33-D35). Not a new discovery. FORENSIC_E1
+serves as validation that multi-AI analysis converges on the same
+structural conclusions, but adds nothing operational beyond what
+was already in the paper.
+
+### Open strategic options for next session
+
+1. **Long-run SCIP**: leave B10 running for 8-24h. May close, may
+   not. Low confidence but zero effort.
+2. **Restart with easier seeds first**: attack B01 (|Aut|=72) and
+   B09 (|Aut|=36, Frobenius pair closes 2 orbits with 1 attack)
+   before the hardest ones. Their WS histograms may be structurally
+   easier to close than B10/B06.
+3. **Pivot to pure geometric attack**: reformulate variables over
+   PG(5,4) points (341 vars) instead of AG(5,4) vectors (1024 vars).
+   Requires full rebuild of ILPGEN.
+4. **Add structural cuts hand-derived** from the actual geometry of
+   residual [9,5,4]_4 extensions. Requires new theoretical work —
+   no ready-made cuts available.
+5. **Accept long timelines**: SCIP cannot close B10/B06 quickly under
+   the current formulation. The Diamond problem may require multi-day
+   runs per seed, which is still faster than the 441+ engines that
+   took months collectively.
+
+Decision deferred to Rafa with fresh head on 21 April.
+
 ---
