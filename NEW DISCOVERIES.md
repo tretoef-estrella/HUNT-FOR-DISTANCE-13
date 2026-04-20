@@ -541,3 +541,40 @@ If this conjecture is true, no Diamond exists via the residual decomposition, an
 *Proyecto Estrella · Consensus Update 20 April 2026 — Madrid*
 *The depth-10 horizon is the new frontier. Seeds #5 and #11 are the next targets.*
 
+---
+
+## Addendum — 20 April 2026 (late)
+
+### Catalogue Verification: 12 Classes Confirmed by Independent Invariants
+
+An independent triple-invariant verifier (`ESTRELLA_VERIFIER_954_v1`) was run on the 12 classes produced by `ENUM_954_v1`. For each class, the following were computed from scratch:
+
+- Weight enumerator `(A_0, ..., A_9)` — direct enumeration.
+- Dual weight enumerator `(B_0, ..., B_9)` — via MacWilliams/Krawtchouk.
+- Automorphism group order `|Aut(C)|` — via column-signature partitioning + exhaustive λ search over `(GF(4)^*)^9`.
+
+**Result: all 12 triples are pairwise distinct.** Runtime: 49 seconds on the reference machine. Additionally, the `|Aut|` values computed via this method agree exactly with the independent `|Aut_lin|` calculation performed earlier through `aut_seed.cpp` (different algorithm, same numbers):
+
+| Class | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 |
+|-------|---|---|---|---|---|---|---|---|---|----|----|----|
+| \|Aut\| | 72 | 18 | 6 | 36 | 6 | 288 | 9 | 12 | 96 | 3 | 6 | 72 |
+
+This does NOT prove exhaustiveness of the catalogue (which would require Magma or a formally verified canonicalization DFS), but it rules out the failure mode of internal duplicates.
+
+### The `ENUM_954_v3` Episode (negative result)
+
+A parallel attempt to re-enumerate the catalogue with a "full monomial group" canonicalization (`ENUM_954_v3`, 126 × 120 × 24 probes per code) produced **31+ putative classes after 2 minutes**, all of which were matching the weight enumerators of the known 12. The verifier was applied to 8 of these with `A_4 = 78`: all 8 collapsed to the SAME invariant triple as class #1. Verdict: the v3 canonicalization is buggy — it outputs multiple non-canonical forms of the same class rather than a unique representative. The 12-class catalogue stands.
+
+### SAT Encoding Failure and Repair
+
+An attempt to close Seed #2 via Kissat CDCL required a CNF encoding of the cardinality constraints. The first version (`ESTRELLA_SAT_GEN_v3`) was found to produce a SAT model with only 2 active variables out of the required 13 — a trivial false-positive SATISFIABLE result. Two distinct bugs were identified:
+
+1. **Header undercounted auxiliary variables.** The pre-computation of aux variable counts did not include the bridge variables used to encode "at-least-k" via negation, causing the DIMACS header to declare fewer variables than the body actually used.
+2. **Sinz blocking clause emitted only at i=n.** The standard Sinz sequential counter requires the blocking clause `¬x_i ∨ ¬s_{i-1,k}` at EVERY intermediate `i` from 2 to n, not only at `i=n`. Omitting the intermediates allows the solver to pack arbitrary TRUE counts in the prefix without triggering the bound.
+
+Both bugs were fixed in `ESTRELLA_SAT_GEN_v4` (two-pass generation with correct auxiliary counting, blocking clauses at every `i`). Minimal unit tests (exactly-5 of 10 variables) produce correct models. The full-scale Seed #2 CNF now appears genuinely hard: minisat failed to return in 3 minutes where v3 returned a trivial false positive in 13 seconds.
+
+### Open Question
+
+Whether Kissat can close any `[9,5,4]_4` seed via SAT in a reasonable time budget remains an empirical question, to be answered by running `diamond_s{N}_v4.cnf` through Kissat with timeout 6–12h per seed. Early results pending.
+
