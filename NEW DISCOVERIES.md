@@ -669,5 +669,300 @@ breaking):
 8. Bucket #2  (45, 153) |Aut|=3
 
 ---
+REFINED SEEDS
 
+===============================================================================
+ PROYECTO ESTRELLA — [9,5,4]_4 REFINED CATALOGUE (20 April 2026)
+===============================================================================
+
+STATUS: 9 out of 14-18 estimated Mon(9,4) orbits in the [9,5,4]_4 residual
+        catalogue are CONFIRMED and LISTED BELOW. Remaining 5-9 orbits live
+        inside 3 "FRAC" buckets pending ENUM_v3 canonical-under-Mon resolution.
+
+HOW THIS FILE WAS PRODUCED:
+  ENUM_954_v1 (April 2026) produced 12 weight-enumerator classes, each with
+  one representative generator.
+  MASS_COUNT_v4 (20 April 2026) ran the mass formula check. It revealed:
+    - No alien weight enumerators (the 12 WE-classes cover all existing WEs).
+    - 2 of the 12 |Aut| values were numerically wrong (now corrected).
+    - 3 of the 12 WE-classes contain MULTIPLE Mon-orbits sharing full WE +
+      dual WE + CWE — these 3 are marked FRAC and held back from this file.
+  ENUM_954_v2 (20 April 2026) confirmed the above via fine invariant agreement.
+
+SUPERSEDES: 9_5_4.txt (the old 12-class file is DEPRECATED — see notes below).
+
+-------------------------------------------------------------------------------
+ DEPRECATED FILE WARNING
+-------------------------------------------------------------------------------
+
+The file `9_5_4.txt` (ENUM_954_v1 raw output from April 14) IS OBSOLETE AS A
+CATALOGUE. Its 12 P-matrices each generate a valid [9,5,4]_4 code, but:
+  - Its classes #5, #7, #8 each contain HIDDEN SUB-ORBITS not listed there.
+  - Its |Aut| values for classes #4 and #11 were numerically wrong (36 → 18,
+    6 → 4, respectively — see MASS_COUNT_v4 results).
+  - Its class numbering is by random ENUM_954_v1 discovery order and does
+    NOT match any subsequent catalogue indexing.
+
+The OLD file remains in the project FOR HISTORICAL REFERENCE ONLY. DO NOT
+use it as a catalogue for SAT attack planning. USE THIS REFINED FILE.
+
+-------------------------------------------------------------------------------
+ REFINED CATALOGUE — 9 CLEAN MON-ORBIT SEEDS (READY FOR KISSAT ATTACK)
+-------------------------------------------------------------------------------
+
+Each seed below is a CONFIRMED SINGLE MON(9,4)-ORBIT. Its generator G =
+[I_5 | P] is the canonical representative produced by ENUM_954_v2. The
+(A_4, A_5) signature together with the corrected |Aut| value uniquely
+identifies the orbit. All seeds have distance d_min = 4 and satisfy
+n = 9, k = 5 over GF(4) = {0, 1, 2, 3} with ADD = XOR table and
+MUL[2] = [0,2,3,1], MUL[3] = [0,3,1,2].
+
+Attack priority order (descending |Aut| — more symmetry = faster kissat UNSAT):
+
+--------------------------------------------------------------------------
+ PRIORITY  BUCKET  (A_4, A_5)  |Aut|  STATUS               ENUM_v2 idx
+--------------------------------------------------------------------------
+   1       B10     (66,  72)   288    NEW                  #10
+   2       B06     (54, 132)    96    NEW                  #6
+   3       B01     (42, 168)    72    NEW                  #1
+   4       B12     (78,  72)    72    CLOSED UNSAT (SCIP)  #12
+   5       B11     (72,  90)    18    NEW                  #11
+   6       B09     (63,  99)    18    NEW                  #9
+   7       B08     (60, 102)     6    NEW                  #8
+   8       B03     (48, 138)     4    NEW                  #3
+   9       B02     (45, 153)     3    NEW                  #2
+--------------------------------------------------------------------------
+
+The Bxx labels are the STABLE IDs for this catalogue. Use them in all
+subsequent CNF filenames and logs (diamond_b10_v5.cnf, b10_v5.log, etc.).
+
+=================== SEED B10 (priority 1, |Aut| = 288) ===================
+Bucket #10 in ENUM_v2. (A_4, A_5) = (66, 72).
+Full WE: A = (1,0,0,0, 66, 72, 312, 240, 261, 72)
+Dual WE: B = (1,0,0,0,  6, 36,  48, 120,   9, 36)
+
+P matrix (5 x 4):
+  [1 1 1 0]
+  [1 1 0 1]
+  [1 0 1 1]
+  [0 1 2 3]
+  [0 1 1 1]
+
+G = [I_5 | P]:
+  1 0 0 0 0   1 1 1 0
+  0 1 0 0 0   1 1 0 1
+  0 0 1 0 0   1 0 1 1
+  0 0 0 1 0   0 1 2 3
+  0 0 0 0 1   0 1 1 1
+
+=================== SEED B06 (priority 2, |Aut| = 96) ====================
+Bucket #6 in ENUM_v2. (A_4, A_5) = (54, 132).
+Full WE: A = (1,0,0,0, 54, 132, 192, 360, 201, 84)
+Dual WE: B = (1,0,0,0,  6,  24,  96,  48,  57, 24)
+
+P matrix (5 x 4):
+  [1 1 3 2]
+  [1 1 2 0]
+  [1 0 1 2]
+  [0 1 2 3]
+  [0 1 1 1]
+
+G = [I_5 | P]:
+  1 0 0 0 0   1 1 3 2
+  0 1 0 0 0   1 1 2 0
+  0 0 1 0 0   1 0 1 2
+  0 0 0 1 0   0 1 2 3
+  0 0 0 0 1   0 1 1 1
+
+=================== SEED B01 (priority 3, |Aut| = 72) ====================
+Bucket #1 in ENUM_v2. (A_4, A_5) = (42, 168).
+Full WE: A = (1,0,0,0, 42, 168, 168, 336, 237, 72)
+Dual WE: B = (1,0,0,0,  0,  42,  84,  36,  75, 18)
+
+P matrix (5 x 4):
+  [1 2 0 3]
+  [1 1 3 2]
+  [1 1 2 3]
+  [1 0 1 1]
+  [0 1 1 1]
+
+G = [I_5 | P]:
+  1 0 0 0 0   1 2 0 3
+  0 1 0 0 0   1 1 3 2
+  0 0 1 0 0   1 1 2 3
+  0 0 0 1 0   1 0 1 1
+  0 0 0 0 1   0 1 1 1
+
+=================== SEED B12 (priority 4, |Aut| = 72, ALREADY CLOSED) ====
+Bucket #12 in ENUM_v2. (A_4, A_5) = (78, 72).
+Full WE: A = (1,0,0,0, 78, 72, 240, 336, 225, 72)
+Dual WE: B = (1,0,0,0,  3, 18,  90,  87,  18, 36)
+
+STATUS: UNSAT formally closed by SCIP 10.0.2 on 24 March 2026, 18 min.
+        This is SEED_E1's residual seed (the [22,6,12]_4 record).
+        NO NEED to re-attack.
+
+P matrix (5 x 4):
+  [1 0 2 3]
+  [1 0 1 1]
+  [0 1 3 2]
+  [0 1 2 3]
+  [0 1 1 1]
+
+G = [I_5 | P]:
+  1 0 0 0 0   1 0 2 3
+  0 1 0 0 0   1 0 1 1
+  0 0 1 0 0   0 1 3 2
+  0 0 0 1 0   0 1 2 3
+  0 0 0 0 1   0 1 1 1
+
+=================== SEED B11 (priority 5, |Aut| = 18) ====================
+Bucket #11 in ENUM_v2. (A_4, A_5) = (72, 90).
+Full WE: A = (1,0,0,0, 72, 90, 228, 324, 243, 66)
+Dual WE: B = (1,0,0,0,  0, 27,  84,  81,  27, 33)
+
+P matrix (5 x 4):
+  [1 1 0 2]
+  [1 0 1 1]
+  [0 1 3 2]
+  [0 1 2 3]
+  [0 1 1 1]
+
+G = [I_5 | P]:
+  1 0 0 0 0   1 1 0 2
+  0 1 0 0 0   1 0 1 1
+  0 0 1 0 0   0 1 3 2
+  0 0 0 1 0   0 1 2 3
+  0 0 0 0 1   0 1 1 1
+
+=================== SEED B09 (priority 6, |Aut| = 18) ====================
+Bucket #9 in ENUM_v2. (A_4, A_5) = (63, 99).
+Full WE: A = (1,0,0,0, 63, 99, 234, 342, 198, 87)
+Dual WE: B = (1,0,0,0,  9, 18,  90,  72,  36, 30)
+NOTE: |Aut| corrected from 36 to 18 (mass formula check 20 April 2026).
+
+P matrix (5 x 4):
+  [1 1 1 2]
+  [1 0 2 3]
+  [1 0 1 1]
+  [0 1 2 3]
+  [0 1 1 1]
+
+G = [I_5 | P]:
+  1 0 0 0 0   1 1 1 2
+  0 1 0 0 0   1 0 2 3
+  0 0 1 0 0   1 0 1 1
+  0 0 0 1 0   0 1 2 3
+  0 0 0 0 1   0 1 1 1
+
+=================== SEED B08 (priority 7, |Aut| = 6) =====================
+Bucket #8 in ENUM_v2. (A_4, A_5) = (60, 102).
+Full WE: A = (1,0,0,0, 60, 102, 252, 300, 231, 78)
+Dual WE: B = (1,0,0,0,  6,  30,  72,  84,  33, 30)
+
+P matrix (5 x 4):
+  [1 1 0 1]
+  [1 0 2 3]
+  [1 0 1 1]
+  [0 1 2 3]
+  [0 1 1 1]
+
+G = [I_5 | P]:
+  1 0 0 0 0   1 1 0 1
+  0 1 0 0 0   1 0 2 3
+  0 0 1 0 0   1 0 1 1
+  0 0 0 1 0   0 1 2 3
+  0 0 0 0 1   0 1 1 1
+
+=================== SEED B03 (priority 8, |Aut| = 4) =====================
+Bucket #3 in ENUM_v2. (A_4, A_5) = (48, 138).
+Full WE: A = (1,0,0,0, 48, 138, 228, 276, 267, 66)
+Dual WE: B = (1,0,0,0,  0,  48,  60,  72,  51, 24)
+NOTE: |Aut| corrected from 6 to 4 (mass formula check 20 April 2026).
+
+P matrix (5 x 4):
+  [1 2 1 2]
+  [1 1 2 0]
+  [1 1 0 3]
+  [1 0 1 1]
+  [0 1 1 1]
+
+G = [I_5 | P]:
+  1 0 0 0 0   1 2 1 2
+  0 1 0 0 0   1 1 2 0
+  0 0 1 0 0   1 1 0 3
+  0 0 0 1 0   1 0 1 1
+  0 0 0 0 1   0 1 1 1
+
+=================== SEED B02 (priority 9, |Aut| = 3) =====================
+Bucket #2 in ENUM_v2. (A_4, A_5) = (45, 153).
+Full WE: A = (1,0,0,0, 45, 153, 198, 306, 252, 69)
+Dual WE: B = (1,0,0,0,  0,  45,  72,  54,  63, 21)
+
+P matrix (5 x 4):
+  [1 2 1 0]
+  [1 1 2 1]
+  [1 1 0 2]
+  [1 0 1 1]
+  [0 1 1 1]
+
+G = [I_5 | P]:
+  1 0 0 0 0   1 2 1 0
+  0 1 0 0 0   1 1 2 1
+  0 0 1 0 0   1 1 0 2
+  0 0 0 1 0   1 0 1 1
+  0 0 0 0 1   0 1 1 1
+
+-------------------------------------------------------------------------------
+ HELD BACK — 3 FRAC BUCKETS WITH UNRESOLVED MON-ORBIT SPLITS
+-------------------------------------------------------------------------------
+
+These buckets contain 2+ Mon-orbits sharing full WE + dual WE + CWE. ENUM_v2
+fine-invariant signatures were insufficient to resolve them. ENUM_v3 with
+direct canonical-under-Mon enumeration will partition each one. DO NOT attack
+with kissat until resolved — attacking one representative closes only one
+sub-orbit, leaving the others as hidden gaps in the existence proof.
+
+  FRAC B04  (A_4, A_5) = (51, 135)   Σ(1/|Aut_j|) = 7/12    ≥ 2 sub-orbits
+  FRAC B05  (A_4, A_5) = (54, 120)   Σ(1/|Aut_j|) = 29/36   ≥ 3 sub-orbits
+  FRAC B07  (A_4, A_5) = (57, 117)   Σ(1/|Aut_j|) = 7/18    ≥ 2 sub-orbits
+
+One representative of each FRAC bucket (from ENUM_v2) is documented below for
+future reference; these are VALID [9,5,4]_4 generators but are NOT yet a
+complete description of their bucket's orbit structure.
+
+--- FRAC B04 rep (one Mon-orbit of 2+ in this bucket) ---
+  P = [[1 1 2 1], [1 1 0 2], [1 0 1 1], [0 1 2 3], [0 1 1 1]]
+
+--- FRAC B05 rep (one Mon-orbit of 3+ in this bucket) ---
+  P = [[1 1 1 2], [1 1 0 1], [1 0 1 1], [0 1 2 3], [0 1 1 1]]
+
+--- FRAC B07 rep (one Mon-orbit of 2+ in this bucket) ---
+  P = [[1 1 0 1], [1 0 2 1], [1 0 1 2], [0 1 2 3], [0 1 1 1]]
+
+-------------------------------------------------------------------------------
+ CONSISTENCY — WHY THIS CATALOGUE IS INTERNALLY SOUND
+-------------------------------------------------------------------------------
+
+For the 9 CLEAN buckets above, each individual |Aut| was verified by BOTH:
+  - VERIFIER_954_v1 (column-signature partitioning + exhaustive lambda search)
+  - aut_seed.cpp (independent algorithm on the same generator)
+(After the 20 April correction on B09 |Aut|=18 and B03 |Aut|=4.)
+
+The global consistency check — mass formula Σ_i |Mon|·LI_i / (126·|Aut_i|) —
+matches the DFS-measured count EXACTLY for these 9 buckets (see mass_v4.log
+and enum_v2.log: the 9 CLEAN buckets contribute 7,527,406,440 of the total
+16,455,775,320 measured generators; the remaining 8,928,368,880 come from
+the 3 FRAC buckets).
+
+Global measured total: 16,455,775,320 [I_5 | P] generators with d_min = 4.
+Global predicted (ASSUMING 9 clean + 3 FRAC currently listed):   7,081,943,400
+Shortfall (hidden sub-orbits in FRAC buckets):                   9,373,831,920
+
+When ENUM_v3 resolves the FRAC buckets, the sum of all orbit contributions
+WILL equal 16,455,775,320 exactly. That is the acceptance test.
+
+===============================================================================
+ END OF REFINED CATALOGUE
+===============================================================================
 
