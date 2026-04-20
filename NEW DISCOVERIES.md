@@ -669,300 +669,150 @@ breaking):
 8. Bucket #2  (45, 153) |Aut|=3
 
 ---
-REFINED SEEDS
 
-===============================================================================
- PROYECTO ESTRELLA — [9,5,4]_4 REFINED CATALOGUE (20 April 2026)
-===============================================================================
+## Correction & consensus — 20 April 2026 (late night, two-Claude cross-audit)
 
-STATUS: 9 out of 14-18 estimated Mon(9,4) orbits in the [9,5,4]_4 residual
-        catalogue are CONFIRMED and LISTED BELOW. Remaining 5-9 orbits live
-        inside 3 "FRAC" buckets pending ENUM_v3 canonical-under-Mon resolution.
+Three items in the preceding 20 April addendum require correction after
+`ESTRELLA_ENUM_954_v3` (Frobenius-pair detector) and an independent
+canonical-under-Mon audit. Two Claude instances converged on this consensus.
+The corrections below supersede the corresponding statements above; nothing
+above is deleted, only annotated.
 
-HOW THIS FILE WAS PRODUCED:
-  ENUM_954_v1 (April 2026) produced 12 weight-enumerator classes, each with
-  one representative generator.
-  MASS_COUNT_v4 (20 April 2026) ran the mass formula check. It revealed:
-    - No alien weight enumerators (the 12 WE-classes cover all existing WEs).
-    - 2 of the 12 |Aut| values were numerically wrong (now corrected).
-    - 3 of the 12 WE-classes contain MULTIPLE Mon-orbits sharing full WE +
-      dual WE + CWE — these 3 are marked FRAC and held back from this file.
-  ENUM_954_v2 (20 April 2026) confirmed the above via fine invariant agreement.
+### (1) Bucket #9 is Frobenius-split, NOT a clean single orbit
 
-SUPERSEDES: 9_5_4.txt (the old 12-class file is DEPRECATED — see notes below).
+`ESTRELLA_ENUM_954_v3` applied the Frobenius test (x → x² over GF(4),
+equivalently 2 ↔ 3 swap on code entries) to the representative P of every
+bucket, followed by canonical-under-Mon comparison via S₉ permutation
+enumeration with column-scale normalization.
 
--------------------------------------------------------------------------------
- DEPRECATED FILE WARNING
--------------------------------------------------------------------------------
+For bucket #9 (A_4=63, A_5=99) the test returned:
+- Code(P) is NOT Mon-equivalent to Code(Frobenius(P)).
+- Direct |Aut_Mon| computation on both: |Aut_Mon(P)| = |Aut_Mon(Frobenius(P))| = 36.
+- Combined contribution 2·(1/36) = 1/18, matching the mass formula measurement.
 
-The file `9_5_4.txt` (ENUM_954_v1 raw output from April 14) IS OBSOLETE AS A
-CATALOGUE. Its 12 P-matrices each generate a valid [9,5,4]_4 code, but:
-  - Its classes #5, #7, #8 each contain HIDDEN SUB-ORBITS not listed there.
-  - Its |Aut| values for classes #4 and #11 were numerically wrong (36 → 18,
-    6 → 4, respectively — see MASS_COUNT_v4 results).
-  - Its class numbering is by random ENUM_954_v1 discovery order and does
-    NOT match any subsequent catalogue indexing.
+Therefore bucket #9 contains **2 Mon-orbits**, each with |Aut_Mon|=36, related
+by Frobenius. The earlier reading "|Aut|=18 single orbit" was arithmetically
+equivalent to the correct "two orbits of |Aut|=36 each" but structurally
+wrong. The two readings cannot be distinguished by the mass formula alone —
+only by direct Frobenius/canonical comparison, which `ENUM_v3` provides.
 
-The OLD file remains in the project FOR HISTORICAL REFERENCE ONLY. DO NOT
-use it as a catalogue for SAT attack planning. USE THIS REFINED FILE.
+### (2) Bucket #5 decomposition — structurally refined
 
--------------------------------------------------------------------------------
- REFINED CATALOGUE — 9 CLEAN MON-ORBIT SEEDS (READY FOR KISSAT ATTACK)
--------------------------------------------------------------------------------
+The sum 29/36 for bucket #5 admits multiple integer decompositions, all
+arithmetically valid. `ENUM_v3` confirms that bucket #5 does contain a
+Frobenius pair with |Aut_Mon|=9 for each twin. The structurally correct
+reading is therefore:
 
-Each seed below is a CONFIRMED SINGLE MON(9,4)-ORBIT. Its generator G =
-[I_5 | P] is the canonical representative produced by ENUM_954_v2. The
-(A_4, A_5) signature together with the corrected |Aut| value uniquely
-identifies the orbit. All seeds have distance d_min = 4 and satisfy
-n = 9, k = 5 over GF(4) = {0, 1, 2, 3} with ADD = XOR table and
-MUL[2] = [0,2,3,1], MUL[3] = [0,3,1,2].
+  29/36 = 2·(1/9) + (residual 7/12)
 
-Attack priority order (descending |Aut| — more symmetry = faster kissat UNSAT):
+with the residual 7/12 itself decomposable into further Mon-orbits (at
+least 1, possibly more). Minimum sub-orbit count in bucket #5: 3 (two
+Frobenius twins at |Aut|=9 each, plus residual ≥ 1 orbit).
 
---------------------------------------------------------------------------
- PRIORITY  BUCKET  (A_4, A_5)  |Aut|  STATUS               ENUM_v2 idx
---------------------------------------------------------------------------
-   1       B10     (66,  72)   288    NEW                  #10
-   2       B06     (54, 132)    96    NEW                  #6
-   3       B01     (42, 168)    72    NEW                  #1
-   4       B12     (78,  72)    72    CLOSED UNSAT (SCIP)  #12
-   5       B11     (72,  90)    18    NEW                  #11
-   6       B09     (63,  99)    18    NEW                  #9
-   7       B08     (60, 102)     6    NEW                  #8
-   8       B03     (48, 138)     4    NEW                  #3
-   9       B02     (45, 153)     3    NEW                  #2
---------------------------------------------------------------------------
+### (3) RETRACTED CLAIM: "one SAT closure per (A_4, A_5) bucket suffices"
 
-The Bxx labels are the STABLE IDs for this catalogue. Use them in all
-subsequent CNF filenames and logs (diamond_b10_v5.cnf, b10_v5.log, etc.).
+A claim propagated in parallel Claude sessions asserted: *"For any two
+Mon-orbits sharing WE + dual WE, the [22,6,13]₄ extension feasibility
+is isomorphic; a certified UNSAT on one representative implies UNSAT
+on every Mon-orbit in that bucket."*
 
-=================== SEED B10 (priority 1, |Aut| = 288) ===================
-Bucket #10 in ENUM_v2. (A_4, A_5) = (66, 72).
-Full WE: A = (1,0,0,0, 66, 72, 312, 240, 261, 72)
-Dual WE: B = (1,0,0,0,  6, 36,  48, 120,   9, 36)
+**This claim is false and is retracted.** WE + dual WE are monomial
+invariants but do NOT determine the geometry of the column configuration
+in PG(4,4). Two Mon-inequivalent codes sharing WE + dual WE can have
+different hyperplane-incidence patterns, different line-load profiles,
+and different per-message slice quotas — each of which affects extension
+feasibility independently. The arcs literature (Bouyukliev and others)
+contains explicit counterexamples of codes with identical weight
+distributions but different extension properties.
 
-P matrix (5 x 4):
-  [1 1 1 0]
-  [1 1 0 1]
-  [1 0 1 1]
-  [0 1 2 3]
-  [0 1 1 1]
+**What DOES hold:** if C₁ and C₂ are Mon-inequivalent but Frobenius-related
+(C₂ = Frobenius(C₁) up to monomial action), then extension feasibility
+IS isomorphic, because Frobenius is a field automorphism of GF(4) that
+extends to an isometry of GF(4)⁹ preserving minimum distance and linear
+independence. A certified UNSAT on C₁ therefore implies UNSAT on
+Frobenius(C₁). **This transfer is valid ONLY for Frobenius pairs, not
+for arbitrary sub-orbits sharing WE + dual WE.**
 
-G = [I_5 | P]:
-  1 0 0 0 0   1 1 1 0
-  0 1 0 0 0   1 1 0 1
-  0 0 1 0 0   1 0 1 1
-  0 0 0 1 0   0 1 2 3
-  0 0 0 0 1   0 1 1 1
+### Refined catalogue status — consensus
 
-=================== SEED B06 (priority 2, |Aut| = 96) ====================
-Bucket #6 in ENUM_v2. (A_4, A_5) = (54, 132).
-Full WE: A = (1,0,0,0, 54, 132, 192, 360, 201, 84)
-Dual WE: B = (1,0,0,0,  6,  24,  96,  48,  57, 24)
+| Bucket (ENUM_v2) | (A_4, A_5) | Structure                          | \|Aut_Mon\| per orbit | # Mon-orbits |
+|-----------------:|-----------:|------------------------------------|-----------------------|--------------|
+| #1               | (42, 168)  | CLEAN                              | 72                    | 1            |
+| #2               | (45, 153)  | CLEAN                              | 3                     | 1            |
+| #3               | (48, 138)  | CLEAN (|Aut| corrected)            | 4                     | 1            |
+| #4               | (51, 135)  | SPLIT (non-Frobenius)              | sum = 7/12            | ≥ 2          |
+| #5               | (54, 120)  | SPLIT (partial Frobenius)          | 9, 9, + 7/12          | ≥ 3          |
+| #6               | (54, 132)  | CLEAN                              | 96                    | 1            |
+| #7               | (57, 117)  | SPLIT (non-Frobenius)              | sum = 7/18            | ≥ 2          |
+| #8               | (60, 102)  | CLEAN                              | 6                     | 1            |
+| #9               | (63,  99)  | SPLIT (Frobenius pair)             | 36 each               | 2            |
+| #10              | (66,  72)  | CLEAN                              | 288                   | 1            |
+| #11              | (72,  90)  | CLEAN                              | 18                    | 1            |
+| #12              | (78,  72)  | CLEAN (already UNSAT, SCIP)        | 72                    | 1            |
 
-P matrix (5 x 4):
-  [1 1 3 2]
-  [1 1 2 0]
-  [1 0 1 2]
-  [0 1 2 3]
-  [0 1 1 1]
+Clean single-orbit buckets: 8 (#1, #2, #3, #6, #8, #10, #11, #12).
+Frobenius-pair buckets: 1 (#9) — one SAT attack closes both orbits.
+Non-Frobenius split buckets: 3 (#4, #5, #7) — each sub-orbit needs its own attack.
 
-G = [I_5 | P]:
-  1 0 0 0 0   1 1 3 2
-  0 1 0 0 0   1 1 2 0
-  0 0 1 0 0   1 0 1 2
-  0 0 0 1 0   0 1 2 3
-  0 0 0 0 1   0 1 1 1
+Total Mon-orbits confirmed minimum: **15**. Maximum estimate: ~20.
 
-=================== SEED B01 (priority 3, |Aut| = 72) ====================
-Bucket #1 in ENUM_v2. (A_4, A_5) = (42, 168).
-Full WE: A = (1,0,0,0, 42, 168, 168, 336, 237, 72)
-Dual WE: B = (1,0,0,0,  0,  42,  84,  36,  75, 18)
+### SAT attack count — consensus
 
-P matrix (5 x 4):
-  [1 2 0 3]
-  [1 1 3 2]
-  [1 1 2 3]
-  [1 0 1 1]
-  [0 1 1 1]
+- 8 clean buckets × 1 attack each                                           = 8
+- Bucket #9 (Frobenius pair, one attack covers both)                        = 1
+- Bucket #4 (≥ 2 non-Frobenius sub-orbits)                                  ≥ 2
+- Bucket #5 (Frobenius pair + residual ≥ 1 orbit)                           ≥ 2
+- Bucket #7 (≥ 2 non-Frobenius sub-orbits)                                  ≥ 2
+- Bucket #12 already closed via SCIP (18 min, 24 March 2026)                — 0 (skip)
 
-G = [I_5 | P]:
-  1 0 0 0 0   1 2 0 3
-  0 1 0 0 0   1 1 3 2
-  0 0 1 0 0   1 1 2 3
-  0 0 0 1 0   1 0 1 1
-  0 0 0 0 1   0 1 1 1
+**Total minimum: 15 SAT closures**, minus B12 already done = **14 remaining**.
+Possibly more if #4/#5/#7 contain > 2 sub-orbits each, pending ENUM_v4
+canonical-under-Mon partition.
 
-=================== SEED B12 (priority 4, |Aut| = 72, ALREADY CLOSED) ====
-Bucket #12 in ENUM_v2. (A_4, A_5) = (78, 72).
-Full WE: A = (1,0,0,0, 78, 72, 240, 336, 225, 72)
-Dual WE: B = (1,0,0,0,  3, 18,  90,  87,  18, 36)
+### Attack plan — consensus priority order
 
-STATUS: UNSAT formally closed by SCIP 10.0.2 on 24 March 2026, 18 min.
-        This is SEED_E1's residual seed (the [22,6,12]_4 record).
-        NO NEED to re-attack.
+Clean and Frobenius-pair buckets first, ordered by |Aut_Mon| descending
+(higher symmetry = more symmetry-breaking leverage = faster UNSAT):
 
-P matrix (5 x 4):
-  [1 0 2 3]
-  [1 0 1 1]
-  [0 1 3 2]
-  [0 1 2 3]
-  [0 1 1 1]
+| Step | Bucket | (A_4, A_5) | |Aut_Mon| | Notes                                |
+|------|--------|-----------:|----------:|--------------------------------------|
+| 1    | B10    | (66,  72)  | 288       | Highest symmetry, best first candidate |
+| 2    | B06    | (54, 132)  |  96       |                                      |
+| 3    | B01    | (42, 168)  |  72       |                                      |
+| 4    | B09    | (63,  99)  |  36       | One attack kills both Frobenius twins |
+| 5    | B11    | (72,  90)  |  18       |                                      |
+| 6    | B08    | (60, 102)  |   6       |                                      |
+| 7    | B03    | (48, 138)  |   4       |                                      |
+| 8    | B02    | (45, 153)  |   3       |                                      |
 
-G = [I_5 | P]:
-  1 0 0 0 0   1 0 2 3
-  0 1 0 0 0   1 0 1 1
-  0 0 1 0 0   0 1 3 2
-  0 0 0 1 0   0 1 2 3
-  0 0 0 0 1   0 1 1 1
+Split buckets B04, B05, B07 deferred until ENUM_v4 with direct
+canonical-under-Mon enumeration extracts representatives of each
+sub-orbit. B12 already closed via SCIP.
 
-=================== SEED B11 (priority 5, |Aut| = 18) ====================
-Bucket #11 in ENUM_v2. (A_4, A_5) = (72, 90).
-Full WE: A = (1,0,0,0, 72, 90, 228, 324, 243, 66)
-Dual WE: B = (1,0,0,0,  0, 27,  84,  81,  27, 33)
+### Engines produced this sub-campaign (20 April 2026)
 
-P matrix (5 x 4):
-  [1 1 0 2]
-  [1 0 1 1]
-  [0 1 3 2]
-  [0 1 2 3]
-  [0 1 1 1]
+- `ESTRELLA_MASS_COUNT_v4.cpp` — bitset DFS with (A_4, A_5) stratification.
+  Revealed the 2.32 discrepancy ratio and pinpointed the 5 problematic buckets.
+  187s runtime on M2. Log: `mass_v4.log`.
 
-G = [I_5 | P]:
-  1 0 0 0 0   1 1 0 2
-  0 1 0 0 0   1 0 1 1
-  0 0 1 0 0   0 1 3 2
-  0 0 0 1 0   0 1 2 3
-  0 0 0 0 1   0 1 1 1
+- `ESTRELLA_ENUM_954_v2.cpp` — fine-invariant (WE + dual WE) canonicalization.
+  Confirmed WE + dual WE is insufficient to resolve hidden sub-orbits; 12 fine
+  signatures match the 12 WE classes. 475s runtime on M2. Log: `enum_v2.log`.
 
-=================== SEED B09 (priority 6, |Aut| = 18) ====================
-Bucket #9 in ENUM_v2. (A_4, A_5) = (63, 99).
-Full WE: A = (1,0,0,0, 63, 99, 234, 342, 198, 87)
-Dual WE: B = (1,0,0,0,  9, 18,  90,  72,  36, 30)
-NOTE: |Aut| corrected from 36 to 18 (mass formula check 20 April 2026).
+- `ESTRELLA_ENUM_954_v3.cpp` — Frobenius-pair detector via canonical-under-Mon
+  comparison of P vs Frobenius(P). Identified B09 as Frobenius-split;
+  confirmed B04 and B07 are NON-Frobenius splits; B05 is partial Frobenius
+  split. ~7s runtime on M2.
 
-P matrix (5 x 4):
-  [1 1 1 2]
-  [1 0 2 3]
-  [1 0 1 1]
-  [0 1 2 3]
-  [0 1 1 1]
+- Independent Python canonical-under-Mon audit validated all ENUM_v3 results
+  via S₉ permutation enumeration with column-scale greedy normalization.
 
-G = [I_5 | P]:
-  1 0 0 0 0   1 1 1 2
-  0 1 0 0 0   1 0 2 3
-  0 0 1 0 0   1 0 1 1
-  0 0 0 1 0   0 1 2 3
-  0 0 0 0 1   0 1 1 1
+### Next immediate step
 
-=================== SEED B08 (priority 7, |Aut| = 6) =====================
-Bucket #8 in ENUM_v2. (A_4, A_5) = (60, 102).
-Full WE: A = (1,0,0,0, 60, 102, 252, 300, 231, 78)
-Dual WE: B = (1,0,0,0,  6,  30,  72,  84,  33, 30)
+Build `ESTRELLA_SAT_GEN_v5.cpp` parameterized by seed P; generate
+`diamond_b10_v5.cnf` from the canonical P of bucket B10 (|Aut|=288,
+priority 1); launch kissat on M2 with 6h timeout. If UNSAT returns
+quickly (< 1h), the remaining 7 clean + Frobenius-pair attacks are
+feasible within 1–2 days of wall-clock time on the same machine.
 
-P matrix (5 x 4):
-  [1 1 0 1]
-  [1 0 2 3]
-  [1 0 1 1]
-  [0 1 2 3]
-  [0 1 1 1]
-
-G = [I_5 | P]:
-  1 0 0 0 0   1 1 0 1
-  0 1 0 0 0   1 0 2 3
-  0 0 1 0 0   1 0 1 1
-  0 0 0 1 0   0 1 2 3
-  0 0 0 0 1   0 1 1 1
-
-=================== SEED B03 (priority 8, |Aut| = 4) =====================
-Bucket #3 in ENUM_v2. (A_4, A_5) = (48, 138).
-Full WE: A = (1,0,0,0, 48, 138, 228, 276, 267, 66)
-Dual WE: B = (1,0,0,0,  0,  48,  60,  72,  51, 24)
-NOTE: |Aut| corrected from 6 to 4 (mass formula check 20 April 2026).
-
-P matrix (5 x 4):
-  [1 2 1 2]
-  [1 1 2 0]
-  [1 1 0 3]
-  [1 0 1 1]
-  [0 1 1 1]
-
-G = [I_5 | P]:
-  1 0 0 0 0   1 2 1 2
-  0 1 0 0 0   1 1 2 0
-  0 0 1 0 0   1 1 0 3
-  0 0 0 1 0   1 0 1 1
-  0 0 0 0 1   0 1 1 1
-
-=================== SEED B02 (priority 9, |Aut| = 3) =====================
-Bucket #2 in ENUM_v2. (A_4, A_5) = (45, 153).
-Full WE: A = (1,0,0,0, 45, 153, 198, 306, 252, 69)
-Dual WE: B = (1,0,0,0,  0,  45,  72,  54,  63, 21)
-
-P matrix (5 x 4):
-  [1 2 1 0]
-  [1 1 2 1]
-  [1 1 0 2]
-  [1 0 1 1]
-  [0 1 1 1]
-
-G = [I_5 | P]:
-  1 0 0 0 0   1 2 1 0
-  0 1 0 0 0   1 1 2 1
-  0 0 1 0 0   1 1 0 2
-  0 0 0 1 0   1 0 1 1
-  0 0 0 0 1   0 1 1 1
-
--------------------------------------------------------------------------------
- HELD BACK — 3 FRAC BUCKETS WITH UNRESOLVED MON-ORBIT SPLITS
--------------------------------------------------------------------------------
-
-These buckets contain 2+ Mon-orbits sharing full WE + dual WE + CWE. ENUM_v2
-fine-invariant signatures were insufficient to resolve them. ENUM_v3 with
-direct canonical-under-Mon enumeration will partition each one. DO NOT attack
-with kissat until resolved — attacking one representative closes only one
-sub-orbit, leaving the others as hidden gaps in the existence proof.
-
-  FRAC B04  (A_4, A_5) = (51, 135)   Σ(1/|Aut_j|) = 7/12    ≥ 2 sub-orbits
-  FRAC B05  (A_4, A_5) = (54, 120)   Σ(1/|Aut_j|) = 29/36   ≥ 3 sub-orbits
-  FRAC B07  (A_4, A_5) = (57, 117)   Σ(1/|Aut_j|) = 7/18    ≥ 2 sub-orbits
-
-One representative of each FRAC bucket (from ENUM_v2) is documented below for
-future reference; these are VALID [9,5,4]_4 generators but are NOT yet a
-complete description of their bucket's orbit structure.
-
---- FRAC B04 rep (one Mon-orbit of 2+ in this bucket) ---
-  P = [[1 1 2 1], [1 1 0 2], [1 0 1 1], [0 1 2 3], [0 1 1 1]]
-
---- FRAC B05 rep (one Mon-orbit of 3+ in this bucket) ---
-  P = [[1 1 1 2], [1 1 0 1], [1 0 1 1], [0 1 2 3], [0 1 1 1]]
-
---- FRAC B07 rep (one Mon-orbit of 2+ in this bucket) ---
-  P = [[1 1 0 1], [1 0 2 1], [1 0 1 2], [0 1 2 3], [0 1 1 1]]
-
--------------------------------------------------------------------------------
- CONSISTENCY — WHY THIS CATALOGUE IS INTERNALLY SOUND
--------------------------------------------------------------------------------
-
-For the 9 CLEAN buckets above, each individual |Aut| was verified by BOTH:
-  - VERIFIER_954_v1 (column-signature partitioning + exhaustive lambda search)
-  - aut_seed.cpp (independent algorithm on the same generator)
-(After the 20 April correction on B09 |Aut|=18 and B03 |Aut|=4.)
-
-The global consistency check — mass formula Σ_i |Mon|·LI_i / (126·|Aut_i|) —
-matches the DFS-measured count EXACTLY for these 9 buckets (see mass_v4.log
-and enum_v2.log: the 9 CLEAN buckets contribute 7,527,406,440 of the total
-16,455,775,320 measured generators; the remaining 8,928,368,880 come from
-the 3 FRAC buckets).
-
-Global measured total: 16,455,775,320 [I_5 | P] generators with d_min = 4.
-Global predicted (ASSUMING 9 clean + 3 FRAC currently listed):   7,081,943,400
-Shortfall (hidden sub-orbits in FRAC buckets):                   9,373,831,920
-
-When ENUM_v3 resolves the FRAC buckets, the sum of all orbit contributions
-WILL equal 16,455,775,320 exactly. That is the acceptance test.
-
-===============================================================================
- END OF REFINED CATALOGUE
-===============================================================================
-
+---
