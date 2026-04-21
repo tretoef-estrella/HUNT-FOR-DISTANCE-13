@@ -1139,4 +1139,62 @@ the same pipeline."
 *Proyecto Estrella · Consensus pause checkpoint — 21 April 2026 morning — Madrid*
 *The brute-force door on the 4092-affine ILP is closed. Next attack vector requires structural reformulation, novel encoding, or combinatorial enumeration. Rafa chose to pause rather than throw more compute at a confirmed wall. Diamond 22 6 13.*
 
----
+-------------------------------------------------------------
+New update April 21st Afternoon. Failure in strategie
+
+## Addendum — 21 April 2026 afternoon (second-moment tautology — negative result)
+
+### Derivation
+
+For any 13 distinct points selected in AG(5,4), the following identity
+holds by incidence counting:
+
+    Sum_{m != 0, alpha} C(n_{m,alpha}, 2) = C(13,2) * 255 = 19890
+
+where n_{m,alpha} = #{selected cols c : dot(m,c) = alpha}.
+
+Proof: Sum over ordered pairs of picked columns (c, c') with c != c' of
+[dot(m,c) = dot(m,c')] equals, for each pair, |{m : dot(m, c-c') = 0}|
+= 255 (non-zero messages orthogonal to the non-zero difference c-c').
+So Sum n(n-1) = 13*12*255 = 39780, and halving gives 19890.
+
+Verified empirically on 5/5 random 13-tuples.
+
+### Why this cut is USELESS as an ILP cut or DFS prune
+
+The identity is ALREADY implied by the existing LP constraints:
+
+    For each m: Sum_alpha n_{m,alpha} = 13
+    For each m: n_{m,alpha} >= 0 integer
+
+Combined with the fact that C(n,2) = n(n-1)/2 depends only on the partition
+of 13 across 4 slices, the per-m sum Sum_alpha C(n_{m,alpha},2) is a function
+of the partition type only, and averaging across all 1023 messages gives
+an identity that is trivially satisfied once the per-message sum-to-13
+constraint holds.
+
+Empirical check: pure upper-bound DFS on B12 gives mass_prunes = 0 out of
+1.6 billion upper-bound prunes. The second-moment cut prunes nothing.
+
+### Lesson
+
+Incidence-geometry identities that are total-over-all-messages are likely
+to be forced by the sum-to-13 per-message constraint combined with
+non-negativity. To be useful as cuts they must be tighter than what the
+LP already implies.
+
+Candidate directions that remain untested:
+
+  - Per-message higher-moment bounds (not the sum, but Max_m of Sum_alpha
+    C(n_{m,alpha},2)). This is NOT a trivial identity; it varies per m.
+  - Triple-message coupling of the form n_{m1,alpha} + n_{m2,beta} - n_{m3,alpha+beta}
+    with m3 = m1+m2 in GF(4)^5. These are the "coupling cuts" the Constructor
+    mentioned as v2 fallback; they are non-trivial and not implied by per-m
+    sum constraints.
+  - OA(12,5,4,1) enumeration in the residual setting (Option 8 from HANDOFF_v2).
+
+### Status
+
+CUT RETRACTED. Do not emit Sum n(n-1)/2 = 19890 as an LP constraint; it will
+only swell the LP without pruning anything. Mark this as a documented
+dead-end so future Claude instances do not re-derive it.
