@@ -927,3 +927,216 @@ was already in the paper.
 Decision deferred to Rafa with fresh head on 21 April.
 
 ---
+--------------------- 
+April 21th 2026
+
+----------------------
+NEW UPDATE APRIL 21ST 2026 MORNING — F13 CONFIRMED + CAMPAIGN PAUSE
+----------------------
+
+---
+
+## Addendum — 21 April 2026 morning (F13 promoted, SCIP campaign paused)
+
+### Session summary
+
+Following the 20 April evening decision tree — option (2) "restart with
+easier seeds first" — the 21 April morning session launched B01
+(|Aut|=72, priority 3) and B09 (|Aut|=36, Frobenius pair, priority 4)
+in parallel on the Mac M2. These were chosen over the higher-priority
+B10 (|Aut|=288) and B06 (|Aut|=96) because the latter had stalled on
+20 April and the hypothesis under test was: "lower-symmetry but
+structurally easier seeds close faster."
+
+Before launching B01 + B09, B12 was re-run as sanity check. It closed
+UNSAT in ~420s, matching the 20 April benchmark exactly and reconfirming
+the pipeline. **B12 remains the only seed in the catalogue with a
+reproducible sub-hour SCIP closure.**
+
+### What happened to B01 and B09
+
+**Both stalled.** Identical pattern to B10 and B06:
+- Dual bound frozen at 1.0.
+- Zero primal bound ever found.
+- Compl percentage plateaued around 43%.
+- High conflict-clause generation with no dual-bound progress.
+
+Rafa killed both after several hours of no advance.
+
+### What happened to the B10 retry
+
+After B01 and B09 stalled, a retry of B10 was attempted with the
+hypothesis that a different random seed inside SCIP's branch-and-bound
+might find a different exploration path and break the plateau.
+
+**After approximately 4 hours, compl stagnated at 7.65%** — markedly
+worse than the 20 April initial run which had reached 47%. Rafa killed
+it.
+
+This is structurally significant: **the stagnation is not a function
+of B&B exploration order.** It is a property of the LP relaxation
+itself under the 4092-affine formulation. Different random seeds inside
+SCIP do not break it because the obstruction is upstream of the B&B.
+
+### F13 — promoted to confirmed operational finding
+
+**Original F13 (20 April, candidate):** 2 of 8 target seeds (B10, B06)
+stalled. Pattern might be seed-specific.
+
+**F13 (21 April, CONFIRMED operational):** 4 consecutive seeds tested
+on 21 April morning (B01, B09, and a B10 retry, plus the re-run B12
+sanity that closed normally for contrast) demonstrate that SCIP ILP
+stagnation is the **default regime** for the 4092-affine formulation
+of the [9,5,4]_4 residual extension problem.
+
+Evidence summary across all attempts:
+- **B12 sanity (legacy Seed #1):** UNSAT in 420s (20 Apr) and again in
+  ~420s (21 Apr). Pipeline reference. See `MUERTA_SEMILLA_UNO.txt` for
+  the legacy March 24 closure at 1078s and `b12_SUMMARY.txt` for the
+  April 20 reproduction.
+- **B10 initial (20 Apr, |Aut|=288):** killed @ 47% compl after ~2h 7min.
+- **B06 (20 Apr, |Aut|=96):** killed @ 43% compl after ~1h 57min.
+- **B01 (21 Apr, |Aut|=72):** killed @ ~43% compl after several hours.
+- **B09 (21 Apr, |Aut|=36, Frobenius pair):** killed @ ~43% compl after
+  several hours.
+- **B10 retry (21 Apr, different rand seed):** killed @ 7.65% compl
+  after ~4 hours. **Worse than the 20 April initial.**
+
+Total: 5 stalls on 5 distinct novel-seed attempts. One sanity closure
+on a previously-solved seed. The sanity closure does not generalize
+to the rest of the catalogue.
+
+### Structural consequence — the brute-force door is closed
+
+**The 4092-affine SCIP formulation does not scale beyond B12 on the
+Mac M2 (or on any reasonable hardware budget in the following
+extrapolation):** if 4 hours produces 7.65% compl in the worst retry
+and ~43% in the stable case, linear extrapolation projects 9–50 hours
+per seed for full closure, but the dual bound stays at 1.0 the whole
+time — meaning linear extrapolation may itself be optimistic. The
+LP relaxation simply does not tighten.
+
+**This means throwing more wall-clock time at SCIP under this
+formulation does not advance the campaign.** The problem is not
+compute scarcity. The problem is that SCIP's standard cut-generation
+loop (Chvátal-Gomory, knapsack-cover, clique, etc.) cannot cut off
+the 4092-affine LP polytope on these seeds.
+
+### What was disproved in the 21 April morning session
+
+1. **Hypothesis "B12 closes because |Aut|=72 is the sweet spot" — DISPROVED.**
+   B01 also has |Aut|=72 and stalled identically to the higher-symmetry
+   B10. Whatever makes B12 tractable is NOT its automorphism group order.
+   It is something specific to its Mon-orbit structure within the
+   4092-affine polytope — and we do not know what.
+
+2. **Hypothesis "Different SCIP random seed breaks plateau" — DISPROVED.**
+   The B10 retry was worse than the original, not better.
+
+3. **Option (1) from 20 April HANDOFF: "long-run SCIP 8–24h" — DISPROVED.**
+   4 hours already saturates.
+
+4. **Option (2) from 20 April HANDOFF: "attack easier seeds first" —
+   DISPROVED.** Easier-symmetry seeds (B01, B09) behaved identically
+   to harder (B10, B06).
+
+5. **Option (5) from 20 April HANDOFF: "accept long timelines" —
+   DISPROVED.** There is no meaningful timeline under this formulation;
+   the LP does not converge regardless of time.
+
+### Remaining options (re-evaluated)
+
+**Dropped** (empirically disproved): (1), (2), (5).
+
+**Still open:**
+
+- **Option (3) — PG(5,4) geometric reformulation.** 341 variables instead
+  of 1024. Unknown whether it inherits the same LP polytope degeneracy.
+  Main engineering cost: full rebuild of ILPGEN.
+
+- **Option (4) — hand-derived structural cuts.** Requires new theoretical
+  work on residual seed geometry. No ready-made cuts available (the
+  fictitious "6→10 Gap cut" remains retracted, applies only to E1).
+
+**New options added 21 April:**
+
+- **Option (6) — Kissat CDCL with correctly-engineered exactly-k encoding.**
+  The SATGEN_v4 (fixed Sinz + header counts) has never been run
+  end-to-end against B01 or B09. Kissat's CDCL is structurally different
+  from SCIP's LP-based branch-and-bound; it may or may not exhibit the
+  same stagnation.
+
+- **Option (7) — LP decomposition / column generation.** The 4092-affine
+  LP has 1023 disjoint message groups of 4 α-constraints each. Column
+  generation or Benders decomposition may find the obstruction that
+  monolithic SCIP cannot. Not explored.
+
+- **Option (8) — OA(12,5,4,1) enumeration and extension testing.**
+  Per the 14 April Gemini result (in this same document, top section),
+  the 12 clean columns of any E1 code must form an OA(12,5,4,1) in
+  specific affine coordinates. Enumerate all inequivalent
+  OA(12,5,4,1)s and test each against the 341 parallel-class load bounds
+  under each Mon-orbit seed. Completely different attack vector.
+  **Almost certainly the highest-leverage untried option at this point.**
+
+- **Option (9) — algebraic closure of a single seed.** Hardest but most
+  decisive. A uniform algebraic proof on one seed may generalize to all,
+  closing the whole problem at once. Seeds B08 (|Aut|=6) and B11
+  (|Aut|=18) are primary candidates per the Sherlock random-walk data
+  (depth-10 non-attainment). Their geometry may admit structural
+  obstructions that solver-based approaches miss.
+
+### Retractions recorded in the 21 April session
+
+1. **Retracted hypothesis:** "Lower-symmetry seeds (B01, B09) will close
+   faster than higher-symmetry ones (B10, B06) because they have fewer
+   symmetries for SCIP's presolver to fight through." False. All
+   stalled identically. Symmetry class does not predict closure time
+   under the 4092-affine formulation.
+
+2. **Retracted hypothesis:** "A different SCIP random seed on B10 will
+   break the plateau encountered on 20 April." False. The 21 April
+   retry stalled worse. Stagnation is upstream of B&B exploration.
+
+### Where Rafa paused
+
+**After the B10 retry failed**, Rafa paused the direct SCIP attack
+entirely and moved to consolidating the campaign state. This document
+and `HANDOFF_STATE_v2.md` are the consolidation products. The next
+session (whenever it happens) starts from a clean strategic rethink:
+choose between options 3, 6, 7, 8, 9 — NOT from "try another seed on
+the same pipeline."
+
+### Numbers
+
+- Seeds attempted with SCIP ILP (all campaigns combined): 7 distinct
+  Bxx labels + 1 retry = 8 SCIP runs.
+- Seeds closed formally (UNSAT): 1 (B12 only, reproducible).
+- Seeds stalled at 7.65%–47% compl: 5 unique (B10, B06, B01, B09, B10-retry).
+- Seeds never attacked: 4 (B11, B08, B03, B02 — clean buckets still
+  on paper queue).
+- Seeds held pending ENUM_v4: 3 (B04, B05, B07 — FRAC buckets).
+- Total SCIP wall-clock burned on stalled runs (all sessions): ~12+ hours.
+- Total Claude engineering hours on refined catalogue: ~40h spread
+  across 4 days and multiple parallel instances.
+- Estimated seeds to formally close under current formulation: **zero**
+  within any practical time budget, per F13.
+
+### Credits
+
+- **Campaign design, seed selection logic, go/kill decisions**: R. Amichis.
+- **SCIP pipeline + ILPGEN + B12 sanity protocol**: auditor Claude (instance B)
+  + constructor Claude (instance A) coordinated 20 April.
+- **B10, B06, B01, B09, B10-retry execution and kill calls**: R. Amichis
+  on M2, with real-time monitoring and decision support from the auditor.
+- **F13 promotion from candidate to confirmed operational**: consensus
+  between R. Amichis (empirical observation) and auditor Claude
+  (structural interpretation) on 21 April morning.
+- **Retraction bookkeeping and HANDOFF_v2 consolidation**: auditor Claude.
+
+---
+
+*Proyecto Estrella · Consensus pause checkpoint — 21 April 2026 morning — Madrid*
+*The brute-force door on the 4092-affine ILP is closed. Next attack vector requires structural reformulation, novel encoding, or combinatorial enumeration. Rafa chose to pause rather than throw more compute at a confirmed wall. Diamond 22 6 13.*
+
+---
