@@ -1198,3 +1198,61 @@ Candidate directions that remain untested:
 CUT RETRACTED. Do not emit Sum n(n-1)/2 = 19890 as an LP constraint; it will
 only swell the LP without pruning anything. Mark this as a documented
 dead-end so future Claude instances do not re-derive it.
+
+--------------------------
+another update same date 21th April
+
+---------------------------------------------------------------
+New update April 21st afternoon — F14 WS-profile invariance + CNF encoding failures
+---------------------------------------------------------------
+
+## Addendum — 21 April 2026 afternoon (F14 confirmed + three CNF dead-ends recorded)
+
+### F14 — WS-bound histogram is invariant across all 9 clean/Frobenius seeds
+
+`bottleneck_scan.cpp` tabulated the per-slice bound distribution (WS[m][alpha]
+across all 4092 slices) for every seed in {B01, B02, B03, B06, B08, B09, B10,
+B11, B12}. Result: `sum_WS = 27621` and `mean = 6.75` are IDENTICAL across
+all 9 seeds. The bound histograms are essentially the same, with the only
+variation being whether the 3 tightest slices have bound=1 (B01, B06, B08,
+B09, B10, B11, B12) or bound=2 (B02, B03).
+
+**Strategic consequence:** per-seed attack ordering based on WS-bound
+"tightness" is NOT a valid heuristic. What separates B12 (SCIP-closable) from
+B10/B06/B01/B09 (SCIP-stalling) is NOT the bound histogram — it must lie in
+the fine algebraic structure of the seed code, not in per-slice statistics.
+
+### Three CNF encoding attempts — all documented negative results
+
+`ESTRELLA_SATGEN_TOTAL_v1` (totalizer on all 4092 slices): 1.7 GB CNF, 8M aux
+vars, Kissat stalled in preprocessing. Too heavy.
+
+`ESTRELLA_SATGEN_ORBIT_v1` (reduction to 342 scaling-orbit variables): ABORTED
+during construction. Per-alpha slice counts are NOT invariant under scaling
+c → λc because slice (m, α) maps to slice (m, λα). The WLOG reduction would
+produce spurious SAT. Formally unsound.
+
+`ESTRELLA_SATGEN_BINARY_v1` (kill-pair binary clauses for WS=1 slices + Sinz
+for loose slices + cardinality=13 via two Sinz): Kissat returned spurious SAT
+in 12 seconds with only 1 of 1024 positive x-vars. Encoding bug in the
+sum>=13 direction: Sinz's internal counter A[n-2][k-1] does not genuinely
+represent "at least k true" when forced positive; the missing upward-
+propagation clauses let the solver satisfy the counter independently of the
+actual count. Same bug class as historic SATGEN_v3 and SATGEN_v5 failures.
+
+### Lesson
+
+Hand-rolled cardinality-in-CNF for exactly-k over 1024 variables is a brittle
+engineering problem. Any future SAT attempt MUST use a production-quality
+cardinality library (PBLib, BREAK_ID) or a verified totalizer. Paired Sinz
+on positive + Sinz on negated literals (k=1011) is correct but infeasible
+at ~1M aux vars.
+
+### Open recommendation
+
+Option 8 from HANDOFF_v2 (OA(12,5,4,1) enumeration + per-seed load-bound
+testing) is now the recommended next concrete build. The OA catalogue is
+finite and explicitly classified in combinatorial literature; testing
+extension feasibility against each of the 15 Mon-orbit seeds sidesteps
+both the SCIP stagnation wall (F13) and the CNF encoding fragility
+documented here.
