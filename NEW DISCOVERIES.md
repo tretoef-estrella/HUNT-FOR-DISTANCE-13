@@ -1256,3 +1256,112 @@ finite and explicitly classified in combinatorial literature; testing
 extension feasibility against each of the 15 Mon-orbit seeds sidesteps
 both the SCIP stagnation wall (F13) and the CNF encoding fragility
 documented here.
+--------------------------------
+New update April 22nd 2026 morning — F15 OA-HUNT v2 negative on B10 (standard basis)
+--------------------------------
+
+## Addendum — 22 April 2026 morning (F15: OA-hunt under standard basis exhausted on B10)
+
+### Context
+
+Following v3 handoff recommendation to pursue Option 8 (OA(12,5,4,1)
+structural hypothesis from Gemini, 14 April), engine
+`ESTRELLA_OA_HUNT_v2.cpp` was built on 22 April morning to test whether
+the 13-column extension of any residual seed must have 12 of those
+columns forming an OA(12,5,4,1) in the **standard basis** `(e_1..e_5)`
+of AG(5,4). The engine combines:
+- The 4092 affine WS-bound constraints (hard).
+- 20 OA slot constraints: for each of 5 standard directions `d` and
+  each of 4 values `v`, the count of placed cols with `AG_VEC[c][d]=v`
+  must be exactly 3.
+- Translation WLOG: col 0 (origin) forced as first placement.
+- Slot-tight OA branching: each DFS level picks the OA slot (d,v)
+  with fewest remaining candidates compatible with WS.
+
+Throughput: ~130–150k nps on M2 single thread.
+
+### Runs on B10 (priority 1, |Aut_Mon|=288)
+
+| Run | Date       | Wall-clock | Nodes     | Deepest | Status |
+|-----|------------|------------|-----------|---------|--------|
+| 1   | 21–22 Apr  | ~10h       | ~5.16B    | 10      | KILLED |
+| 2   | 22 Apr AM  | ~2.5h      | ~1.34B    | 8       | KILLED |
+
+No 12-col OA-compatible arrangement found in ~6.5B accumulated nodes.
+
+### Diagnostic (`ESTRELLA_DIAG_v1.cpp`, lex-greedy trace on B10)
+
+| Depth | Placed | Placeable cols | OA slots saturated |
+|-------|--------|----------------|--------------------|
+| 0     | 0      | 1024           | 0 / 20             |
+| 1     | 1      | 1023           | 0 / 20             |
+| 2     | 2      | 1022           | 0 / 20             |
+| 3     | 3      | 1021           | **4 / 20**         |
+| 4     | 4      | 288            | 4 / 20             |
+| 5     | 5      | 168            | 5 / 20             |
+| 6     | —      | 0 (greedy dies)| —                  |
+
+The OA+WS combined search space collapses sharply around depth 3–5.
+In lex ordering, greedy dies at depth 6; in full DFS (v2) the tree
+does occasionally reach depth 10 but never 12 in accessible compute.
+
+### F15 — operational finding
+
+**OA(12,5,4,1) hypothesis in the STANDARD basis does not close B10 in
+accessible compute.** Three possible explanations, not distinguished
+by this experiment:
+
+(a) No OA-compatible Diamond exists for B10 in standard basis.
+    Search is not exhaustive enough to claim this formally.
+(b) An OA-compatible Diamond exists only in a NON-standard basis.
+    Gemini's theorem requires a basis built from 5 LI normals of
+    PG(3,4) subspaces at load x=6 in E1★'s dirty HP. This basis is
+    generally NOT `(e_1..e_5)`.
+(c) The OA hypothesis does not extrapolate from E1★ (= B12 residual)
+    to B10 at all. Gemini's theorem is proved only for E1★.
+
+### Caveat on interpretation
+
+F15 is a **hunt-negative**, not a non-existence proof. The v2 engine's
+startup banner explicitly prints this caveat. Any future Claude
+reading logs with `VERDICT: NO OA-compatible Diamond for B10` must NOT
+claim non-existence of the [22,6,13]₄ Diamond on the basis of this
+run alone.
+
+### Strategic consequence
+
+- Option 8 as naively implemented (standard basis, lex DFS, no
+  symmetry breaking) is **exhausted for B10**.
+- Do NOT re-run `OA_HUNT_v2` on B10 expecting different results.
+- The recommended next build is `ESTRELLA_OA_HUNT_v3.cpp` with
+  **Aut_Mon(seed) symmetry breaking**: compute the full 288-element
+  Aut_Mon(B10) action on AG(5,4), partition the 1024 columns into
+  orbits, and iterate only over orbit representatives at DFS depth 1.
+  The first branching factor drops from ~1023 to ~4, potentially
+  closing the standard-basis search in minutes instead of hours.
+  If v3 also saturates without finding a Diamond, the negative is
+  stronger (under OA-standard hypothesis) but still not a formal
+  non-existence proof.
+- Fallback: Option 9 (algebraic single-seed closure) becomes the
+  natural next path if v3 also exhausts.
+
+### Engines produced this sub-campaign
+
+- `ESTRELLA_OA_HUNT_v1.cpp` — first OA-hunt engine (superseded by v2).
+  ~10k nps. Slot scanning via per-candidate `ws_ok` check.
+- `ESTRELLA_OA_HUNT_v2.cpp` — optimised with incremental
+  `ws_tight_hits[c]` propagation. ~150k nps on M2. Ran the 10h B10
+  test overnight and the 2.5h B10 retest on 22 April morning.
+- `ESTRELLA_DIAG_v1.cpp` — diagnostic tool: traces the lex-greedy
+  placement and reports branching factor + OA-saturation at each
+  depth. Validates that OA+WS pruning bites at depth 3–5.
+
+### Credits
+
+- OA hypothesis (Option 8 origin): Gemini (Google), 14 April 2026.
+- Engine design, implementation, diagnostic trace, F15 finding:
+  Claude (Anthropic, instance C), 22 April 2026 morning.
+- Cross-instance audit (orbit-based soundness + slot-tight canonical
+  fix recommendation): Claude (Anthropic, instance D), via Rafa
+  relay, 22 April 2026 morning.
+- Execution on M2, kill calls, F15 promotion to operational: R. Amichis.
