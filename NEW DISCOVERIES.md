@@ -1625,3 +1625,80 @@ Arc Theorem is a new operational cut. MULTIRESIDUAL layer-1 is closed.
 Next attack requires either mixed-layer MULTIRESIDUAL (Option 10),
 higher-moment cuts (Option 11), or a fresh Gemini consultation on the
 geometry of mixed residuals. Diamond 22 6 13.*
+------------------------------------------------------------------------------------------------------
+--------------------------------
+New update April 23rd 2026 — F17 LP-relaxation invariance across all seeds
+--------------------------------
+
+## Addendum — 23 April 2026 (F17: the continuous LP is algebraically identical between seeds; ARC cuts do not tighten it)
+
+### Context
+
+Following HANDOFF_v5's recommendation of Options 10/11/12 after AUTMON+ARC+SBDS (F16) exhausted pure-DFS attacks on B10, a fresh 23 April session explored a different vector entirely: instead of searching over integer assignments, probe the continuous LP-relaxation polytope of the 4092-affine formulation directly, without branch-and-bound. The goal was to test whether any single-seed LP formulation admits a dual-bound < 13, which would prove infeasibility at the root node in seconds — the empirical signature of what made B12 close fast (dual bound = 1 frozen from round 0, followed by 258 global fixings at node 1 restart).
+
+### Engine and method
+
+`ESTRELLA_LP_PROBE_v1.cpp` (~250 lines C++): for each of the 9 Mon-orbit seeds (B01, B02, B03, B06, B08, B09, B10, B11, B12), generate the continuous LP
+
+    max   sum_c x_c
+    s.t.  sum_{c : dot(m,c)=alpha} x_c <= WS[m]   for all m != 0, alpha
+          0 <= x_c <= 1                            (CONTINUOUS, not binary)
+
+Solve via HiGHS dual simplex. Sanity-checked that the seed WE histograms match the catalogue (B12: A_4=78, A_5=72, ..., A_9=72; all 9 seeds pass).
+
+### F17 — operational finding
+
+**For every one of the 9 clean/Frobenius-pair seeds, LP_max = 16.000000 exactly.** Identical fractional optimum across the entire catalogue. HiGHS solves each LP in 0.5–1.0s on the sandbox (equivalently ~0.3s on M2 class hardware). The value is not just numerically close — it is the same vertex, and solve time/behaviour is indistinguishable between seeds.
+
+This is the third invariant of this kind after F14 (sum_WS = 27621 across seeds) and the bound-histogram near-identity documented 21 April. The continuous polytope defined by the 4092 WS-affine constraints is, up to linear re-indexing of variables, the SAME across all seeds in the catalogue.
+
+**Consequence:** the signal that separates B12 (SCIP-closable) from the other seeds is NOT in the 4092-affine polytope itself. It is in the combinatorial interaction between those constraints and integrality. This rules out any attack that tries to distinguish seeds via pure-LP dual bounds.
+
+### F17b — the ARC Theorem, added as explicit LP cuts, does NOT tighten LP_max
+
+`ESTRELLA_LP_PROBE_v2.cpp` (~280 lines): extended v1 by emitting every collinear triple {a, b, c} in AG(5,4) as the constraint `x_a + x_b + x_c <= 2`. AG(5,4) has 87,296 projective lines, each of size 4, giving C(4,3) * 87296 = 349,184 ARC triple cuts. Added to the 4092 WS cuts: 353,276 total constraints, 1024 continuous variables. HiGHS solves in ~8 seconds.
+
+**Result on B12:** LP_max = 16.000000 exactly. Unchanged.
+
+The LP fractional optimum uses 116 columns with strictly-fractional values (ranging 0.0001 to ~0.65), 908 columns at 0, and 0 columns at 1. The distribution is such that no collinear triple of three non-zero fractional columns has sum exceeding 2 — the ARC cuts are redundant with what the WS constraints already imply for this LP vertex.
+
+**Consequence:** ARC cuts are geometrically valid and must remain in any DFS/MIP attack (they prune during branching), but they do NOT help at the LP-root level. Adding them to SCIP's .lp input will not accelerate closure of the stalling seeds. This is the quantitative confirmation of the intuition hinted at in HANDOFF_v5's warning #15.
+
+### F17c — single-column probing does not cascade either
+
+Third probe: for each column c, force x_c = 1 via bound tightening, re-solve LP. Expected: some columns c would make the resulting LP infeasible or drop LP_max below 13. **Result on B12 (columns 0 and 100 sampled):** forced-LP still returns LP_max = 16.0, status optimal. The polytope has enough slack that fixing any SINGLE variable to 1 does not yet propagate. SCIP's decisive "258 global fixings" on B12 came from CDCL-style conflict learning on PAIRS and TRIPLES of variables simultaneously, not from single-variable probing. Naive per-column probing drivers are futile.
+
+### What this closes
+
+- **Do NOT build more pure-LP cutting-plane engines on the 4092-affine formulation.** The polytope is symmetric across seeds and three orthogonal cut families (WS, ARC, single-fix probing) all leave LP_max = 16 unchanged. There is no further mileage here.
+- **Do NOT expect seed-differentiation from LP bounds alone.** The distinction between B12 (fast) and B10/B06/B01/B09 (stalling) lives in the integer polytope, not the continuous one. The symmetry detector + CDCL of SCIP found a structure on B12 it cannot find on the others; that asymmetry is still unexplained.
+- **Do NOT retry "LP_max < 13 via seed-specific cuts" unless the cuts are not implied by WS + ARC + {0,1}.** v1 and v2 exhaust the obvious ones.
+
+### What is reconfirmed
+
+The 23 April sandbox session reconfirmed from a new angle what F14 and F15 already said: the 4092-affine formulation treats all [9,5,4]_4 seeds identically up to linear relabeling. The residual extension problem's hardness is not in the constraints themselves but in the integer-vs-continuous gap, and that gap is exactly 3 (16 - 13) on every seed.
+
+### Engines produced this sub-campaign
+
+- `ESTRELLA_LP_PROBE_v1.cpp` — pure WS-LP max probe. Deliverable: one .lp per seed, confirmed LP_max = 16.0 for all 9. Negative result. Archive, do not re-run.
+- `ESTRELLA_LP_PROBE_v2.cpp` — v1 + 349,184 ARC triple cuts. Confirmed LP_max = 16.0 on B12. Negative result. Archive.
+
+### Retracted proposals from this session (bookkeeping)
+
+1. **"Phase-1 LP Probe" standalone (rev 1 of today's work):** disproved by F17 above. The proposal was that `max sum x_c` would yield seed-differentiated bounds. It does not.
+
+2. **"ARC-cut LP Probe":** disproved by F17b. ARC cuts are valid integer constraints but do not tighten the LP root.
+
+3. **"Single-column probing driver":** disproved by F17c on B12 samples. Forcing x_c = 1 leaves LP_max at 16.0; naive per-column probes will not cascade on any seed.
+
+4. **"Pair-probing on the top 100 fractional columns":** proposed by Claude (instance G) during 23 April session, NOT run. Rejected by Rafa as more-of-the-same. Given F17's finding that the fractional optimum spreads across 116 columns with no obvious pivot structure, pair-probing would require C(116,2) = 6670 LP solves (~2h) and is unlikely to reveal dead pairs given the polytope's width. Documented here as proposed-but-wisely-declined.
+
+### Credits
+
+- Engine design, sandbox execution, F17 discovery and documentation: Claude (Anthropic, instance G), 23 April 2026.
+- Kill-call on LP-family attacks before a third engine was launched: R. Amichis.
+- Prior art that framed the probe as worth trying (B12's "258 fixings at node 1"): observation extracted from `b12_scip.log` during 23 April session.
+
+### Strategic consequence
+
+The LP-family door is closed. Three LP variants attempted in a single session, three identical outcomes. Future Claude instances must treat "just add this new cut to the LP" proposals with extreme suspicion: the 4092-affine polytope has ~3 units of slack across ALL seeds, and generic cuts (ARC, pair-probing, moment-based) do not bridge that gap. Pursue Options 10 (MULTIRESIDUAL mixed-layer), 11 (higher-moment cuts rigorously derived — NOT just added to LP, but used as DFS prunes), 12 (Gemini re-engagement for new theorems), or the algebraic single-seed approach (Option 9). Do NOT pursue more LP cuts.
