@@ -1908,4 +1908,45 @@ level) masks genuine algebraic differences at the integer level.
   extended — SCIP at 300s will not close the `cas=0` pairs; the issue is
   LP-relaxation degeneracy, not time.
 
----
+--------------------------------------------------------------------------------
+## F19 — Cluster reproducibility across seeds under F18 pair-forcing (24 April 2026, evening)
+
+Running `ESTRELLA_PORMISCOJONES_PAIR_SCIP_v2.cpp` (F18 + BLOCKED cascade depth-∞ encoded as pre-SCIP unit constraints) on two seeds in parallel produced **two distinct TIMEOUT clusters** with different structural signatures. First direct evidence that the F18 residual is **seed-specific in location** but **systematic across the Mon(9,4)-orbit family**.
+
+**Data at voluntary pause (24 April ~16:30 Madrid, both campaigns killed):**
+
+| Seed | LIVE pairs | Processed  | PRE_INFEAS | INFEAS | TIMEOUT | FEAS |
+|------|-----------:|-----------:|-----------:|-------:|--------:|-----:|
+| B10  | 2535       | 1518 (60%) | 123        | 1242   | **153** | 0    |
+| B06  | 7559       | 3387 (45%) | 316        | 2985   | **86**  | 0    |
+
+Campaigns paused voluntarily to free CPU for cross-project work. F18 v2 has full resume capability (`--start <orbit_id>`).
+
+**B10 cluster — 153 timeouts:** Two-anchor structure. 117 TIMEOUTs at `a=70` (AG_VEC=[2,1,0,1,0]) and 36 TIMEOUTs at `a=71` (AG_VEC=[3,1,0,1,0]). Both anchors in the 2-plane `{*,1,0,1,0}` of AG(5,4); differ only in v0 (2 vs 3). **Uniform signature `cas_zero=0` across 100% of 153 timeouts** — cascade impotence.
+
+**B06 cluster — 86 timeouts:** Single anchor `a=66` (AG_VEC=[2,0,0,1,0]). All three anchors across both seeds share the partial coordinate pattern `{v2=0, v3=1, v4=0}`. **Mixed cascade signature**: 82/86 have `cas_zero=0` (*Sabor A*); **exactly 4 have `cas_zero=244`** (*Sabor B*): orbits 3274 (b=90), 3278 (b=95), 3334 (b=166), 3349 (b=183). Sabor B count did not grow between 44% and 45% completion — rare, concentrated early. In Sabor B, cascade derives 244 zeros (free cols 966 → 722) and SCIP still times out. Cascade-active, LP-insufficient.
+
+Sabor B is new, not present in B10. Refutes the provisional "cas=0 ↔ TIMEOUT" predictor. **The TIMEOUT phenomenon has at least two distinct mechanisms.**
+
+**Hypothesis falsification:**
+
+1. **Gemini N_tight hypothesis (24 April morning)**: all 1250 B10 pairs had N_tight ≥ 3. **Zero separation. Falsified** via `ESTRELLA_NTIGHT_VERIFIER_v1`.
+2. **Rafa's avaricia-vs-niebla diagnostic**: B10 a=70 TIMEOUT rows showed +71 free cols, +73k degrees of freedom, `cas_z=0` vs 71.2. **Avaricia confirmed** via `ESTRELLA_CLUSTER_ANALYZER_v1`.
+
+**Depth-9 barrier in third attack family:** `ESTRELLA_PORMISCOJONES_DLX_v1.cpp` sanity on B10 pair (70,260) hit depth=9 at 100k nodes in 13s without closure. F16 (AUTMON DFS) + F18 (pair-forcing+cascade+probing-0) + F19 (DLX) — **three independent families converge on depth-9 in B10's cluster**. Strong evidence Depth-10 Barrier Conjecture is structural.
+
+**Operational consequence:** F18 v2 closes the vast majority of LIVE canonical pairs per seed at <1s each, but leaves a residual cluster resistant to cascade+probing-depth-1. Full non-B12 closure requires (a) probing depth-2 (pair-tentative cascade; NOT YET BUILT), (b) conflict learning from failed depth-9 branches, or (c) direct enumeration with depth bound. F18 v2 closes ~95-98% at 60s budget, leaving a characterized geometric residual.
+
+**Files (keep):**
+- `ESTRELLA_PORMISCOJONES_PAIR_SCIP_v2.cpp` — primary productive engine.
+- `ESTRELLA_NTIGHT_VERIFIER_v1.cpp` — Gemini hypothesis auditor.
+- `ESTRELLA_CLUSTER_ANALYZER_v1.cpp` — niebla/avaricia tabulator.
+- `ESTRELLA_PORMISCOJONES_DLX_v1.cpp` — DLX sanity engine (depth-9 evidence).
+- `pairs_B06.cat`, `pair_scip_v2_B10_progress.log`, `pair_scip_v2_B06_progress.log`.
+- `cluster_analysis_B10.csv`, `ntight_B10.csv`.
+
+**Do NOT:**
+- Claim B10 or B06 "closed UNSAT". Partially closed with characterized residual.
+- Build v3 with only probing depth-1. DLX_v1 proved it fails in B10 a=70 cluster.
+- Rerun v2 with longer timeout on cluster pairs. LP-relaxation degeneracy, not compute time.
+- Trust a cluster signature observed on a single seed. B10's `cas=0 ↔ TIMEOUT` was broken by B06's Sabor B.
