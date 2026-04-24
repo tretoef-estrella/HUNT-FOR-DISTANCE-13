@@ -1702,3 +1702,101 @@ The 23 April sandbox session reconfirmed from a new angle what F14 and F15 alrea
 ### Strategic consequence
 
 The LP-family door is closed. Three LP variants attempted in a single session, three identical outcomes. Future Claude instances must treat "just add this new cut to the LP" proposals with extreme suspicion: the 4092-affine polytope has ~3 units of slack across ALL seeds, and generic cuts (ARC, pair-probing, moment-based) do not bridge that gap. Pursue Options 10 (MULTIRESIDUAL mixed-layer), 11 (higher-moment cuts rigorously derived — NOT just added to LP, but used as DFS prunes), 12 (Gemini re-engagement for new theorems), or the algebraic single-seed approach (Option 9). Do NOT pursue more LP cuts.
+Then invokes `scip -c 'read ...' -c 'set limits time 60' -c 'optimize' -c 'display statistics' -c 'write solution ...' -c 'quit'`, parses the output, classifies each pair as INFEAS / OPTIMAL_FEASIBLE / TIMEOUT / ERROR, logs progress per-pair including SCIP wall-clock time, and stops immediately with a celebration message + pretty-printed 6×22 generator if any pair returns OPTIMAL_FEASIBLE (the Diamond).
+
+### Sanity validation
+
+Before the B10 campaign:
+- **Aut_Mon(B10) = 288** exactly, matching the catalogue value verified by MASS_COUNT_v4, VERIFIER_954_v1, aut_seed.cpp, and ENUM_954_v3.
+- **Aut_Mon(B02) = 3** exactly (second sanity check on a low-symmetry seed).
+- **Sum of pair-orbit sizes = C(1023, 2) = 522,753** exactly for both B10 and B02 runs — the orbit partition is complete and disjoint.
+- **Manual LP inspection of a single pair (B10, a=1, b=4)**: emitted .lp has exactly 1024 binaries, 1364 affine constraints (matches ILPGEN_v1 count), 3 force-one unit constraints, 51 force-zero ARC kill constraints, 1 sum-to-13 constraint. SCIP reads the .lp cleanly and returns `SCIP Status : problem is solved [infeasible]` in 0.06s on Rafa's Mac M2 (SCIP 10.0.2, SoPlex 8.0.1).
+
+Pipeline validated end-to-end.
+
+### F18 — operational finding
+
+**B10 campaign, 24 April 2026 morning (killed by Rafa after ~60 min of wall-clock on Mac M2, single-threaded nice -n 10):**
+
+| Metric | Value |
+|---|---|
+| Canonical pair orbits total | 2639 |
+| Dead (Arc Theorem pre-kill) | 104 |
+| LIVE pairs to attack | 2535 |
+| Pairs processed before kill | 1284 |
+| INFEASIBLE | 1242 |
+| TIMEOUT (at 60s budget) | 42 |
+| OPTIMAL_FEASIBLE | 0 |
+| ERROR | 0 |
+| Median SCIP time per infeasible pair | ~0.6s |
+| Mean SCIP time per infeasible pair | ~0.7s |
+| Total SCIP wall-clock spent | ~50 min |
+
+**This is the first method, since B12's original closure in March, to return formal UNSAT on any non-B12 seed of the catalogue within practical time.** 1242 formal UNSAT certificates on canonical pair representatives of B10, each one representing an entire Aut_Mon(B10)-orbit of size up to 288. Collectively, these 1242 pairs witness ~246,000 pair configurations where no Diamond can exist.
+
+**F18 does NOT close B10.** It closes ~50% of the canonical pair catalogue of B10. The remaining 42 timeouts plus 1251 unattempted pairs are not resolved.
+
+### The 42 timeouts — geometric clustering
+
+The 42 timeouts are NOT random. They cluster at `a = 70, b ∈ [260, 297]`. Specifically, pairs with orbit_id in the range 1308-1341 saw timeout rate ~73% (contrasted with ~0% in the first 1242 pairs before this range). All timeouts in this cluster have orbit_size = 288 (maximum Aut_Mon action), i.e. they lie in "generic" orbits rather than in stabilized strata.
+
+AG index 70 decodes to vector [2, 1, 0, 1, 0] in GF(4)^5 (reading a = 70 = 0+1·4+0·16+1·64+0·256 = 0*1+1*4+0*16+1*64+0*256 — wait, re-verify: a=70 in binary is 01000110, so in 2-bit digits from LSB: (70 & 3) = 2, ((70>>2) & 3) = 1, ((70>>4) & 3) = 0, ((70>>6) & 3) = 1, ((70>>8) & 3) = 0. So AG_VEC[70] = [2, 1, 0, 1, 0]). The b values in the cluster range over AG_VEC[260..297] which all share the structure b[3] = 0, b[4] = 1 approximately — they sit in a 2-dimensional affine slice of AG(5,4) with a specific geometric relationship to AG[70].
+
+**This cluster is the first concrete structural data on where B10's combinatorial hardness concentrates.** It is a candidate input for Option 12 (Gemini re-engagement on "what makes the a=70 cluster resist pair-forcing").
+
+### What F18 closes
+
+- **The claim "no tractable method exists beyond B12 under the 4092-affine formulation" is empirically weakened but not refuted.** B12 remains the only seed with monolithic closure. PORMISCOJONES pair-canonical provides partial closure of B10. The question "is the remaining 50% closable without new theory?" remains open.
+- **The assumption that lower |Aut| seeds would be harder** is complicated. F18 confirms that higher |Aut| helps PORMISCOJONES enormously (fewer canonical pairs to attack) but also means that when a specific orbit resists, each resistance represents 288 pair configurations. The geometric shape of resistance matters more than its count.
+
+### What F18 informs
+
+1. **Pipeline generalizes to all 9 seeds.** PORMISCOJONES_CANON executes in ~1 second per seed. Expected catalogue sizes (predicted from C(1023,2)/|Aut| with ARC-kill factor ~4%): B06 ~5400 LIVE, B01 ~7300 LIVE, B09 ~14500 LIVE, B11 ~29000 LIVE, B08 ~87000 LIVE, B03 ~130000 LIVE, B02 ~174000 LIVE. Campaign times by linear extrapolation from B10's 0.7s/pair: B06 ~1h, B01 ~1.5h, B09 ~3h, B11 ~6h, B08 ~18h, B03 ~27h, B02 ~36h. Practical through B11. Marginal for B08. Impractical for B03/B02 without further technique improvements.
+
+2. **The 42 timeouts on B10 warn that every seed will likely have its own resistance cluster.** Without a closure of the hard-cluster phenomenon, PORMISCOJONES v1 cannot be claimed to close any seed formally.
+
+3. **Option 13 (PORMISCOJONES v2 with BLOCKED cascade depth-2) becomes the priority technical track.** Additional x_c=0 unit constraints derived from saturated-slice cascade after (a,b) are fixed, encoded directly in the .lp header rather than left for SCIP to discover during B&B. Expected: 50-300 additional forced-zero constraints per pair, converting timeouts into sub-5s INFEAS closures. Mechanism validated in another part of the campaign (MITM_K7_v3 BLOCKED cascade: 3.2B nodes closed in 4.9 h on 120 subproblems).
+
+### What F18 does NOT do
+
+- Does NOT prove the Diamond is absent from B10. 1251 LIVE pairs unattempted plus 42 timeouts mean the seed is formally open.
+- Does NOT provide any insight into what distinguishes B12 from the other seeds. F18 closes partial B10; B12 remains separately understood as the only monolithically-closable seed.
+- Does NOT address the FRAC buckets (B04, B05, B07). The ENUM_v4 canonical-under-Mon enumeration first attempt on 24 April afternoon (brute-force lex-min over 29M configurations per P matrix) did not scale. The FRAC buckets remain blocked on a correctly-engineered ENUM_v4 with hash-invariant pre-bucketing.
+
+### Engines produced this sub-campaign
+
+- `ESTRELLA_PORMISCOJONES_CANON_v1.cpp` — canonical pair orbit enumerator with ARC pre-pruning. Sanity checks pass. Runtime ~1s per seed on Mac M2. Keep.
+- `ESTRELLA_PORMISCOJONES_PAIR_SCIP_v1.cpp` — SCIP dispatcher over the canonical catalogue. Keep. **Known limitation**: at 60s per-pair timeout, 42 of 1284 processed B10 pairs timeout. Raising timeout iterates the same vector and is discouraged (see warning 18 in HANDOFF v7).
+- `ESTRELLA_PORMISCOJONES_LP_VALIDATE_v1.cpp` — single-pair .lp inspector for auditing specific suspicious pairs without touching the dispatcher. Keep.
+- `pormiscojones_launch.sh` — bash orchestrator for end-to-end campaign. Keep.
+- `ESTRELLA_PORMISCOJONES_ENUM954_v4_v1.cpp` — first attempt at ENUM_v4. Does not scale (29M iterations per P matrix, timed out on first 4 matrices at 30s sandbox test). Keep source for reference; do NOT run or extend without hash-invariant pre-bucketing strategy. See HANDOFF v7 warning 19.
+
+### Retracted proposals from this session (bookkeeping)
+
+1. **"Construct ENUM_v4 in 30 minutes while B10 PORMISCOJONES runs"** — underestimation of the Mon(9,4) canonicalization problem by multiple orders of magnitude. The correct approach requires hash-invariant pre-bucketing + on-demand equivalence testing (Kaski-Östergård style), which is a multi-day engineering task. 30 minutes produced a non-scaling brute-force attempt. Retracted and documented as warning 19.
+
+2. **"Run PORMISCOJONES v1 with 300s or 900s timeout on the 42 B10 timeouts and call it `closing B10`"** — proposed by Claude and reconsidered same session. This is iterating the same vector (warning 17, warning 18). The correct pivot is either (a) Option 13 (PORMISCOJONES v2 with BLOCKED cascade — structural change), or (b) Option 12 (Gemini re-engagement with the F18 data as new input — different attack family entirely). Not retried.
+
+3. **"B10 UNSAT after this campaign"** — the 1242 INFEAS represent UNSAT for 50% of the canonical pair catalogue, NOT for B10 as a seed. Claim was briefly made during session and corrected. B10 formal status remains: partially closed (50%), not closed.
+
+### Strategic consequence
+
+F18 is the first new productive attack family since March's B12 closure. It demonstrates that the 4092-affine formulation is tractable **when combined with orbit quotient + geometric pre-propagation + decomposition into small forced sub-problems**. This suggests two independent next steps:
+
+- **Short horizon**: build PORMISCOJONES v2 with BLOCKED cascade (option 13) to attempt full closure of B10 — and by extension B06, B01, B09, B11 — within practical time budgets.
+- **Medium horizon**: feed the F18 data — specifically the geometric clustering of the 42 timeouts at `a=70, b∈[260-297]` — to Gemini (option 12) with the updated question about what structural property of B10's Mon-orbit concentrates combinatorial hardness in that sub-region. A positive answer from Gemini could yield a new cut family applicable to all 9 seeds simultaneously, bypassing the per-seed campaign entirely.
+
+Do NOT pursue PORMISCOJONES v1 with longer timeouts. Do NOT pursue LP-family variations. Do NOT iterate the AUTMON DFS ceiling.
+
+### Credits
+
+- **Engine design, sandbox validation, F18 discovery and documentation:** Claude (Anthropic, instance H), 24 April 2026 morning.
+- **Kill-call on the B10 campaign after 1284 pairs** (correctly recognizing that the tail of timeouts was not going to close in reasonable time and that iterating the same vector was discouraged): R. Amichis.
+- **Insistence on the "carta marcada" framing and on operational directness under pressure**: R. Amichis throughout session.
+- **First recognition that F16 (AUTMON depth-9 ceiling) and F17 (LP invariance) left an unclosed gap that pair-canonical orbit quotient + ARC pre-pruning + unit-constraint pair-forcing could partially fill**: Claude + Rafa in the 24 April opening exchanges.
+- **ENUM_v4 first-attempt scaling failure and warning 19 documentation**: Claude same session, self-retraction after sandbox test demonstrated the brute-force canonicalization was not viable.
+
+---
+
+*Proyecto Estrella · 24 April 2026 — Madrid · F18 added.*
+*PORMISCOJONES closed 1242 pair sub-problems on B10 in 50 minutes of SCIP time — the first non-B12 UNSAT certificates the campaign has produced since March. The 42 residual timeouts at a=70 are the next frontier.*
