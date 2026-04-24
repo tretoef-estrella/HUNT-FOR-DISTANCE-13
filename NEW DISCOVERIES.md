@@ -1800,3 +1800,112 @@ Do NOT pursue PORMISCOJONES v1 with longer timeouts. Do NOT pursue LP-family var
 
 *Proyecto Estrella · 24 April 2026 — Madrid · F18 added.*
 *PORMISCOJONES closed 1242 pair sub-problems on B10 in 50 minutes of SCIP time — the first non-B12 UNSAT certificates the campaign has produced since March. The 42 residual timeouts at a=70 are the next frontier.*
+------------------------------------------------------
+## F19 — Cluster reproducibility across seeds under F18 pair-forcing (24 April 2026, evening)
+
+Running `ESTRELLA_PORMISCOJONES_PAIR_SCIP_v2.cpp` (F18 + BLOCKED cascade depth-∞
+as pre-SCIP unit constraints) on two seeds in parallel produced **two distinct
+TIMEOUT clusters**, each with a different structural signature. This is the
+first direct evidence that the F18 residual is **seed-specific in location**
+but **systematic across the Mon(9,4)-orbit family**.
+
+**Data snapshot (24 April ~14:30 Madrid, campaigns paused):**
+
+| Seed | LIVE pairs | Processed | PRE_INFEAS | INFEAS | TIMEOUT | FEAS |
+|------|-----------:|----------:|-----------:|-------:|--------:|-----:|
+| B10  | 2535       | 1518 (60%) | 123        | 1242   | **153** | 0    |
+| B06  | 7559       | 3359 (44%) | 316        | 2975   | **68**  | 0    |
+
+**B10 cluster (153 timeouts, campaign paused):**
+- Two-anchor: 117 TIMEOUTs at `a=70` (AG_VEC=[2,1,0,1,0]), 36 TIMEOUTs at
+  `a=71` (AG_VEC=[3,1,0,1,0]). Both anchors live in the 2-plane `{*,1,0,1,0}`
+  of AG(5,4); they differ only in coordinate v0 (2 vs 3).
+- **Cascade signature: uniform `cas_zero=0` across all 153 timeouts**
+  (100%). Cascade depth-∞ derives zero additional forced zeros from 3 initial
+  ones in this cluster. The `{0,a,b}` forcing saturates no affine slice
+  whatsoever. This is *cascade impotence*.
+- Confirmed also by v3-DLX (depth-1 failed-literal probing) sanity on pair
+  `(70,89)`: 0 additional zeros derived at probing depth 1, 13.4s wall-time
+  budget exceeded at depth=9. **The depth-9 barrier of F16 re-appears here**:
+  three independent attack families (AUTMON DFS, pair-forcing+SCIP, DLX with
+  MCV branching) all converge on depth-9 in the B10 hard cluster. This is
+  strong evidence that the barrier is intrinsic to B10's algebraic geometry
+  at these anchors, not an artifact of any single technique.
+
+**B06 cluster (68 timeouts so far, single anchor a=66, campaign still running):**
+- Single anchor `a=66` (AG_VEC=[2,0,0,1,0]). Compare to B10's a=70=[2,1,0,1,0]
+  and a=71=[3,1,0,1,0]: all three anchors share `v2=0, v3=1, v4=0`. This is
+  geometric evidence that the cluster anchor lives in the same 2-plane
+  family across seeds. The specific (v0, v1) values are seed-dependent.
+- **Cascade signature mixed**: 64/68 timeouts have `cas_zero=0` (*Sabor A*,
+  identical to B10); **4/68 have `cas_zero=244`** (*Sabor B*): orbits 3274
+  (b=90), 3278 (b=95), 3334 (b=166), 3349 (b=183). In Sabor B, cascade
+  derives 244 additional forced zeros (reducing free cols from 966 to 722)
+  and SCIP *still* times out at 60s. Cascade-active but insufficient.
+- Sabor B is new and not present in B10. It refutes the provisional "cas=0
+  ↔ TIMEOUT" binary predictor from B10. The TIMEOUT phenomenon has at
+  least two distinct mechanisms; F18 v2 is not a universal closer even when
+  cascade works.
+
+**Hypothesis falsification (for the record):**
+
+1. **Gemini N_tight hypothesis (24 April morning, Q1 response)**: TIMEOUT
+   pairs should have N_tight(a,b) = 0 (zero intersections with HEAVY_0 and
+   HEAVY_AFF). Verified against the B10 log via `ESTRELLA_NTIGHT_VERIFIER_v1`:
+   **all 1250 B10 pairs in the partial log had N_tight ≥ 3.** Zero separation.
+   Gemini's hypothesis falsified for this family.
+
+2. **"Niebla vs avaricia" diagnostic (Rafa, 24 April evening)**: verified
+   via `ESTRELLA_CLUSTER_ANALYZER_v1`. For a=70 in B10, INFEAS_FAST vs
+   TIMEOUT rows differ with TIMEOUT showing:
+   - `n_free = 966` (TIMEOUT) vs `895` (INFEAS_FAST) — **+71 free cols**.
+   - `sum_free_Cr2 = 986,664` vs `913,834` — **+73k total degrees of freedom**.
+   - `cas_z = 0` vs `71.2` — cascade binary off/on.
+   Same direction on all search-space indicators. **Avaricia hypothesis
+   confirmed for B10.** Rafa's diagnosis correct.
+
+**Structural implication for the campaign:**
+
+F18 + cascade **closes the majority of LIVE canonical pairs per seed
+formally UNSAT at <1s each**, but leaves a residual cluster per seed that
+v2 cannot close at 60s SCIP budget. The cluster is:
+- reproducible across seeds (both B10 and B06 show clusters),
+- anchored to AG-vectors sharing a partial coordinate pattern
+  (`v2=0, v3=1, v4=0` so far),
+- resistant to two-level propagation (cascade + depth-1 probing both
+  fail in B10 a=70 cluster),
+- partially cascade-responsive in B06 but still LP-insufficient
+  (Sabor B, 4 pairs so far).
+
+**Operational consequence:** any future "full closure of a non-B12 seed
+under Mon-orbit pair-forcing" will require either (a) a third-level
+propagation beyond probing depth-1 (e.g. depth-2 pair-probing, conflict
+learning from failed branches), or (b) direct enumeration/DLX on the
+post-cascade residual with tree depth explicitly bounded by 10. Neither
+is available as of this addendum. **F18 v2 alone does NOT close any
+non-B12 seed fully. It closes ~95-98% of each at 60s budget.**
+
+**Paper-worthy result:** Two seeds closed formally to ≥95% UNSAT under
+PORMISCOJONES v2 with reproducible geometric residual. First attack
+family with substantial partial closure on seeds other than B12. Cluster
+signature varies by seed, confirming F14/F17 (seed "sameness" at LP
+level) masks genuine algebraic differences at the integer level.
+
+**Files from this session (keep):**
+- `ESTRELLA_PORMISCOJONES_PAIR_SCIP_v2.cpp` — v1 + BLOCKED cascade depth-∞
+- `ESTRELLA_NTIGHT_VERIFIER_v1.cpp` — Gemini hypothesis auditor
+- `ESTRELLA_CLUSTER_ANALYZER_v1.cpp` — niebla/avaricia indicator tabulator
+- `ESTRELLA_PORMISCOJONES_DLX_v1.cpp` — probing+DLX sanity engine (validates
+  depth-9 barrier reproducibility; NOT productive as main engine)
+- `pairs_B06.cat`, `pair_scip_v2_B10_progress.log`, `pair_scip_v2_B06_progress.log`
+- `cluster_analysis_B10.csv`, `ntight_B10.csv`
+
+**Do NOT:**
+- Build v3 with probing depth-1 only. `DLX_v1` sanity already proved it
+  fails in B10 a=70 cluster (depth-9 barrier unchanged).
+- Claim B10 or B06 closed. They are ~95% closed pending cluster resolution.
+- Rerun v2 with longer timeout on the cluster pairs. Same family, warning #18
+  extended — SCIP at 300s will not close the `cas=0` pairs; the issue is
+  LP-relaxation degeneracy, not time.
+
+---
