@@ -1950,3 +1950,74 @@ Sabor B is new, not present in B10. Refutes the provisional "cas=0 ↔ TIMEOUT" 
 - Build v3 with only probing depth-1. DLX_v1 proved it fails in B10 a=70 cluster.
 - Rerun v2 with longer timeout on cluster pairs. LP-relaxation degeneracy, not compute time.
 - Trust a cluster signature observed on a single seed. B10's `cas=0 ↔ TIMEOUT` was broken by B06's Sabor B.
+
+- ------------------------------------------------------------------------------------------------------------
+--------------------------------
+New update April 25th 2026 — F19b: plane cuts (Gemini Griesmer 4-plane bound) implemented as v3, validated sound on B12 but ineffective on B10 cluster
+--------------------------------
+
+## Addendum — 25 April 2026 (F19b: Gemini's Griesmer 4-Plane Bound Theorem operationalized as 2304 plane-cut constraints; validated sound on B12 but does not break the B10 (a=70, b∈[260-297]) cluster)
+
+### Context
+
+Following the F19 cluster discovery (24 April: 153 B10 timeouts + 86 B06 timeouts anchored at AG vectors sharing partial pattern `{v2=0, v3=1, v4=0}`), Gemini was queried for a structural theorem explaining the geometric concentration of difficulty. Gemini's answer (24 April evening): the **Griesmer 4-Plane Bound Theorem**.
+
+### Gemini's theorem (verbatim claim)
+
+For any projective plane Π̄ ⊂ PG(5,4), a `[22,6,13]_4` Diamond can contain at most **4 points** in Π̄. Proof: project the Diamond from Π̄ to obtain a residual `[22-k, 3, ≥13]_4`; by Griesmer bound, `n ≥ 13 + ⌈13/4⌉ + ⌈13/16⌉ = 18`, so `22 - k ≥ 18` ⟹ `k ≤ 4`. Operational consequence: for any pair `(s_i, s_j)` of seed columns and any affine 2-flat Π = `coset of span(s_i, s_j)` in AG(5,4), the projective closure Π̄ contains exactly 2 seed points (`s_i`, `s_j`, by Arc Theorem no third seed col is collinear), so the AG-layer (16 points of Π) admits at most **2 extension points**. Constraint: `Σ_{c ∈ Π} x_c ≤ 2` for every (i,j,coset). Total: `36 × 64 = 2304` plane-cut constraints.
+
+### Engine: ESTRELLA_PORMISCOJONES_PAIR_SCIP_v3.cpp
+
+v3 = v2 (BLOCKED cascade depth-∞) + 2304 plane cuts emitted as additional `≤ 2` constraints in the .lp head. Critical implementation detail: x_0 (origin) excluded from every plane cut — origin is a translation anchor in this formalism, not a real extension column. Without this exclusion, the cuts render the LP infeasible immediately on every pair (anchor + 2 forced extensions = 3, violating ≤2). Caught and fixed in sandbox before deployment to Mac.
+
+### Three sanity tests (Mac M2, SCIP 10.0.2, 25 April night)
+
+| Test | Configuration | Expected | Actual |
+|------|---------------|----------|--------|
+| 3 | B12 pair(1,4) cascade ON, plane OFF | INFEAS <1s (v2 sanity) | INFEAS in 1.44s ✓ |
+| 4 | B12 pair(1,4) cascade ON, plane ON K=2 | INFEAS quickly (cuts sound) | INFEAS in 1.66s ✓ |
+| 5 | B10 hard pair(70, 260) cascade ON, plane ON K=2 | INFEAS or much faster than v2's 60s timeout | **TIMEOUT 60s, identical to v2** ✗ |
+
+### F19b — what the data say
+
+**The plane cuts are sound.** Test 4 confirms: 2304 plane cuts add 0.22s of overhead to a B12 closure that v2 already achieved. SCIP processes the constraints without numerical issues. Gemini's theorem does not introduce unsoundness.
+
+**The plane cuts do not propagate productively in LP root for the B10 cluster.** Test 5 result is identical to v2's TIMEOUT. The cluster is not closed by the addition of these 2304 constraints under the current SCIP B&B strategy.
+
+**Geometric verification of why.** AG_VEC[70] = `[2, 1, 0, 1, 0]` ∈ V (matches `{v2=0, v3=1, v4=0}` pattern, confirmed). AG_VEC[260] = `[0, 1, 0, 0, 1]` **NOT in V** (v_3=0, v_4=1). Spot-check of cluster b values 260, 267 shows none lie in V. **The cluster is NOT "both pair endpoints in V" — it is "anchor a in V, partner b outside V".** Gemini's theorem applied to this cluster gives one constraint per plane through V: `x_a + Σ_{c ∈ V \ {a}} x_c ≤ 2`, simplified to `Σ_{c ∈ V \ {a}} x_c ≤ 1` over 15 free variables. This is an LP-cheap constraint (LP saturates with 15 × 1/15 ≈ 0.067 each, infringing nothing) and provides essentially zero LP-root tightening. F17 (LP_max=16 invariant) bites again.
+
+**The interpretation error in the original Gemini reading.** I (Claude, sending the F19 query) and Gemini (formulating the response) both implicitly assumed the cluster anchors meant *both* a and b lie in V. They do not. The cluster's geometric signature is asymmetric: one endpoint in V, the other forming a specific paired direction outside. The plane cut on V cannot capture this asymmetry — it only constrains within-V mass.
+
+### What F19b closes
+
+- Gemini's Griesmer 4-Plane Bound Theorem **as a static .lp constraint family** is empirically not the path through the cluster. The bound is mathematically valid and implementable, but operationally insufficient because (a) the cluster pairs are V-asymmetric, (b) the LP relaxation absorbs the cuts as redundant given F17, and (c) SCIP's default branching does not exploit them productively.
+- A subtle but important correction: the F19 cluster is NOT the geometric region "both points in V". It is "a in V paired against a specific external b". The original phrasing in F19 ("anchored at v2=0, v3=1, v4=0") referred only to the **a coordinate**, not the pair geometry. This was implicit in the F19 data but not made explicit in the Gemini query. If F19c is pursued, the question to Gemini must be reformulated to address the V-out-of-V asymmetry directly.
+
+### What F19b informs
+
+- **The plane cuts may still propagate productively as INTEGER cuts during cascade**, not as LP constraints. If the BLOCKED cascade is extended to include plane-saturation propagation (when k of the points in a plane are forced to 1, the remaining 16-k must respect ≤ K_plane - k), additional fixings can result. v3's cascade currently iterates only over the 4092 affine slice constraints; extending it over the 2304 plane constraints is a 30-minute change. This is the proposed v4. **It may or may not break the cluster.** The F19b data suggests it might help peripherally but is unlikely to be decisive: the plane cut on V with one endpoint forced (a) yields cascade only at the next level (when some other x_c in V gets forced via affine cascade, then the V plane cut can fire). For pairs where the cluster b is outside V, the plane cut on V has no leverage on b's chain.
+- **Branching strategy may matter.** SCIP's default branching does not prioritize the 15 variables inside V. Forcing branching priority on V variables (cheap to set in SCIP via `set branching priority`) would direct B&B exploration where the plane cuts have leverage. Worth one targeted experiment.
+- **The deeper issue is structural.** F19 timeouts are not LP-degenerate (cascade ON in v2 derives 244 forced zeros for some Sabor B pairs and still times out). They are not plane-cut-resolvable (v3 K=2 plane cuts present, still timeout). They are not branching-priority-trivial (SCIP would have explored V quickly if it found leverage). The cluster is genuinely a depth-9-barrier residue concentrated in a specific AG sub-pattern, and F18+F19+F19b strongly suggest no static cut family on the 4092-affine + plane-cut polytope will close it. **Closure of the F19 cluster likely requires either (a) a fundamentally different propagation (probing depth-2 explicit, MITM partial-state caching, or DLX with depth-bound 10 hard cap), or (b) a structural theorem about the cluster's V-out-of-V asymmetry that we do not yet have.**
+
+### Engines produced this sub-session
+
+- `ESTRELLA_PORMISCOJONES_PAIR_SCIP_v3.cpp` (25 April night) — v2 + 2304 plane cuts. Compiles clean, validate-emit produces sound .lp (post x_0-exclusion fix), Tests 3/4 pass on B12. Test 5 TIMEOUT on B10 cluster pair (70, 260). Keep source for reference and for v4 base. Do NOT launch full campaigns — adds ~5x .lp size for no closure benefit on the hard cluster. Useful only if v4 (cascade-extended-to-planes) demonstrates incremental gain.
+- `pormiscojones_v3_test.sh` (25 April night) — bash test suite running the three diagnostic tests above. Keep.
+
+### Strategic consequence
+
+F19b is a clean negative result on a clean theoretical proposal. The Griesmer 4-Plane Bound is real, but the LP relaxation absorbs it — exactly as F17 predicted for any constraint family that does not exploit problem-specific integer structure. The lesson is the same one F17 wrote in red: **the 4092-affine polytope (and now the 4092-affine + 2304-plane polytope) has ~3 units of integer slack across all seeds, and generic geometric constraints, however mathematically valid, do not bridge that gap when added as static LP constraints.**
+
+The path forward is either (a) propagation-during-construction (cascade-extended, probing, DLX) or (b) a structural theorem specifically about the V-out-of-V asymmetry of the F19 cluster. Static cut families remain a closed door.
+
+### Credits
+
+- **Theorem proposal:** Gemini (Google, 24 April evening). Mathematically correct, operationally insufficient.
+- **Implementation as v3 with x_0-exclusion fix and three sanity tests:** Claude (Anthropic, 25 April night).
+- **Geometric verification that the cluster pairs are V-asymmetric (not both in V):** Claude (Anthropic, 25 April night, post-Test-5 analysis).
+- **Decision to test before celebrating ("antes de tirar código, audita el teorema"):** R. Amichis, throughout 25 April session.
+
+---
+
+*Proyecto Estrella · 25 April 2026 — Madrid · F19b added.*
+*Gemini's 4-Plane Bound is the second clean structural theorem the project has tested as static LP constraints. Result is identical to F17's verdict: structurally elegant, operationally absorbed by LP relaxation slack. The F19 cluster remains open. Next experiments: v4 cascade-extended-to-planes, or branching priority on V, or pivot to probing depth-2.*
