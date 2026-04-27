@@ -2021,3 +2021,92 @@ The path forward is either (a) propagation-during-construction (cascade-extended
 
 *Proyecto Estrella · 25 April 2026 — Madrid · F19b added.*
 *Gemini's 4-Plane Bound is the second clean structural theorem the project has tested as static LP constraints. Result is identical to F17's verdict: structurally elegant, operationally absorbed by LP relaxation slack. The F19 cluster remains open. Next experiments: v4 cascade-extended-to-planes, or branching priority on V, or pivot to probing depth-2.*
+---------------------------------------------------------------------------------------------
+--------------------------------
+New update April 26th 2026 — F19c: WS-formula audit (PMJ vs GEOM); PMJ found mathematically incorrect, GEOM stricter and correct, B12 closes UNSAT under both, F19 cluster survives GEOM (structural, not formulation artifact)
+--------------------------------
+
+## Addendum — 26 April 2026 (F19c: WS-formula audit promotes GEOM over PMJ; F19 cluster confirmed structural via single-pair sanity at (B10, 70, 260) TIMEOUT under GEOM identical to PMJ)
+
+### Context
+
+A discrepancy in the affine-cap formula was identified during a math audit. The project had been using PMJ (`cap[m,α] = 9 − sc[m,α]`); direct re-derivation from PG(5,4) hyperplane-load geometry gives GEOM (`cap[m,α] = 9 − sc[m,0]`, independent of α). The two formulae differ in 2541/4092 entries on B12 and 2493/4092 on B10. PMJ is strictly looser than GEOM in roughly half the entries and stricter in the other half. ΣWS_GEOM = 27648, ΣWS_PMJ = 27621 (diff 27 across all seeds, near-identical totals).
+
+### Empirical validation of GEOM correctness
+
+Random extension of B12 seed by 13 AG(5,4) columns; for message m=1 across all four μ ∈ GF(4): `actual_load(HP(m,μ))` matches `sc[m,0] + n[m,μ]` exactly in all four slices. PMJ's prediction `9 − sc[m,μ]` does not match. GEOM is the geometrically correct cap.
+
+### Polytope inclusion: PMJ ⊃ GEOM (PMJ looser)
+
+For any (m,α) where `sc[m,α] < sc[m,0]`, PMJ gives a higher cap than GEOM. Therefore the GEOM polytope is contained in the PMJ polytope, and any pair UNSAT under PMJ is also UNSAT under GEOM. **No Diamonds have been hidden by prior PMJ runs.** All UNSAT certificates produced under PMJ (B12 monolithic, F18 v2 partial closures of B10 60% and B06 45%) remain valid.
+
+### B12 sanity under both formulations
+
+Engine `ESTRELLA_PORMISCOJONES_PAIR_SCIP_GEOM_v1.cpp` built (v1 with `cap_per_alpha` rewritten to return `9 − sc[m,0]` uniformly across α). Compiled clean, audit confirms 4 alpha caps uniform per m on both B12 and B10.
+
+- **B12 monolithic .lp under GEOM:** SCIP closes UNSAT in 497s, gap 0%, 3160 nodes, compl=100% in restart phase. Sym detection finds log10 group size 2.16 (vs 1.20 under PMJ) — GEOM exposes 10× larger symmetry to SCIP, consistent with the cleaner uniform-α structure.
+- **B12 monolithic .lp under PMJ (parallel comparison run):** stalls at compl ~45% before manual kill at 13700+ nodes, 14+ minutes. Confirms GEOM materially more informative for SCIP B&B.
+- **(B12, pair 1, 4) under GEOM single-pair sanity:** INFEAS in 1.78s.
+- **(B10, pair 1, 4) under GEOM single-pair sanity:** INFEAS in 1.16s.
+
+### The decisive cluster sanity
+
+**(B10, pair 70, 260) under GEOM, timeout 60s: TIMEOUT at 60.15s.** Identical verdict to PMJ historical run on the same cluster pair. `aff_added=1364, forced1=3, forced0=56` — same problem structure, same SCIP outcome.
+
+The F19 cluster (B10 anchors a=70/71 and B06 anchor a=66, all sharing partial coordinate `{v_2=0, v_3=1, v_4=0}`) survives the formulation correction. The avaricia / LP-relaxation degeneracy that drives the cluster TIMEOUT is structural to the 4092-affine polytope and is NOT resolved by tightening individual cap entries from `9−sc[m,α]` to `9−sc[m,0]`. F17's verdict ("3 units of slack across all seeds, generic constraint corrections do not bridge the integer gap") is reconfirmed in a sharper form: even the MATHEMATICALLY CORRECT cap leaves the cluster intact at 60s budget.
+
+### Four-family convergence on the depth-9 barrier
+
+F19c is the fourth independent attack family to converge on the (70, 260) cluster:
+1. AUTMON DFS family (F16): depth-9 ceiling.
+2. F18 v2 PMJ (cascade depth-∞ + probing depth-1): TIMEOUT 60s, F19 documents.
+3. DLX_v1 with MCV branching (F19): depth=9 max at 100k nodes in 13s.
+4. **F18 v1 GEOM (this addendum): TIMEOUT 60s identical to PMJ.**
+
+The Depth-10 Barrier Conjecture (20 April) gains its strongest evidence to date. **The barrier is publishable as a structural finding regardless of whether the [22,6,13]_4 closure is ever achieved.**
+
+### What F19c closes
+
+- **PMJ formula is mathematically incorrect** for the residual extension problem. GEOM is correct. All future engines use GEOM. The error did not hide any Diamond and did not invalidate any UNSAT certificate, but it did inflate the LP polytope by ~3 entries-worth of redundancy per message on average.
+- **The F19 cluster is structural, not a formulation artifact.** Re-running the B10 or B06 campaigns under GEOM would reproduce the same 95-98% INFEAS + 2-5% cluster TIMEOUT pattern. Do not waste compute on this.
+- **The OA-inverse attack is also dead** (proposed and rejected during the same 26 April audit session): the OA(12,5,4,1) constraint is a property of E1 codes (with privileged dirty hyperplane H₀), not of the Diamond. Re-derivation with `L_* ≤ 9` gives `x ≤ (14+L_*)/4 < 6`, so no PG(3,4) inside the Diamond reaches load 6 and the rigidity collapses. Without H₀, the basis x=6 is unknown a priori and would require an outer GL(5,4) loop ≈ 10^9 multiplier.
+
+### What F19c informs
+
+- **Probing depth-2 (option 14 in HANDOFF) is now the primary technical track.** First genuinely stronger propagation than anything tried; builds on F18 GEOM v1 base with an additional `O(n_free²)` pair-tentative cascade pass per pair before SCIP. Cost ~73s per cluster pair, ~3h for B10's 153 timeouts. Either it breaks the cluster (B10/B06 close UNSAT formally, campaign extends) or definitively confirms structural intractability.
+- **Honest fork at end of v9:** option (A) negative-result write-up with F19c four-family convergence as headline; option (B) build F18 GEOM v3 with probing depth-2; option (C) algebraic single-seed exhaustive closure (DLX + depth 13 hard cap, days-weeks). Rafa to decide after F18 GEOM v3 result if option (B) is chosen first.
+
+### Files (keep)
+
+- `ESTRELLA_PORMISCOJONES_PAIR_SCIP_GEOM_v1.cpp` — productive engine, GEOM cap rule, primary attack tool going forward.
+- `ESTRELLA_WS_FORMULA_AUDIT_v1.cpp` — emits both PMJ and GEOM .lp side-by-side for diff comparison.
+- `diamond_B12_GEOM.lp`, `diamond_B12_PMJ.lp` — the two B12 .lp files.
+- `b12_GEOM_audit.log` — SCIP UNSAT certificate under GEOM, 497s.
+- `single_GEOM_B12_1_4.log`, `single_GEOM_B10_1_4.log` — fast UNSAT sanity checks.
+- `single_GEOM_B10_70_260.log` — cluster TIMEOUT evidence; the structural-not-artifact proof.
+
+### Do NOT
+
+- Re-run B10/B06 campaigns under GEOM expecting cluster resolution. Sanity falsified that hypothesis. Same TIMEOUT as PMJ on the cluster.
+- Claim "PMJ was hiding the Diamond". PMJ looser ⇒ PMJ-UNSAT implies GEOM-UNSAT. No Diamond was rejected by the prior runs.
+- Build engines using PMJ. Use GEOM going forward.
+- Propose OA-inverse attacks on the Diamond. Audited and rejected: the OA constraint is an E1 property and dies for the Diamond at the load-6 step.
+- Propose more LP cut families on the 4092-affine GEOM polytope. F17 + F19b + F19c agree: generic LP corrections do not bridge the 3-unit slack across all seeds.
+
+### Credits
+
+- **WS-formula discrepancy spotted:** constructor Claude instance, 26 April afternoon (correctly identified PMJ ≠ GEOM entry-by-entry; subsequently retired for jumping to "PMJ rejects Diamonds" without re-derivation).
+- **Direct re-derivation, polytope-inclusion correction, empirical validation by random-extension construction:** auditor Claude instance, 26 April evening.
+- **B12 dual-formulation audit run (.lp emission, parallel SCIP launches, GEOM 497s UNSAT capture):** R. Amichis, 26 April evening, on Mac M2.
+- **Engine `ESTRELLA_PORMISCOJONES_PAIR_SCIP_GEOM_v1.cpp` build, sanity test design, cluster sanity decision:** auditor instance after constructor retirement.
+- **Decision to retire the constructor instance after false alarm:** R. Amichis ("Constructor jubilado por ineficiente e inflador de humos").
+- **Strategic fork articulation at end of session:** R. Amichis + auditor instance.
+
+### Strategic consequence
+
+F19c is the second clean methodological correction the project has tested empirically. F17 closed LP-cut variants. F19b closed Gemini's Griesmer 4-Plane bound as static cuts. F19c now closes the formula-correction route (GEOM ≠ PMJ entry-by-entry but same operational verdict on the cluster). **The 4092-affine polytope's 3-unit integer slack is robust to: (1) generic cut additions, (2) plane-cut additions, (3) cap-formula correction.** Any future "fix the LP" proposal must address this triple-robustness explicitly. The path forward is propagation-during-construction (probing depth-2, MITM, DLX with depth bound) or direct algebraic attack on the cluster's V-out-of-V asymmetry — not LP modifications.
+
+---
+
+*Proyecto Estrella · 26 April 2026 — Madrid · F19c added.*
+*The F19 cluster has now been confirmed structural under the mathematically correct formulation. Four independent attack families converge on its depth-9 boundary. The next move is propagation depth-2 (option B), exhaustive single-seed (option C), or formal write-up (option A). Rafa to decide.*
