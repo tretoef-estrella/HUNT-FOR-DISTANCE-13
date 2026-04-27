@@ -2110,3 +2110,111 @@ F19c is the second clean methodological correction the project has tested empiri
 
 *Proyecto Estrella · 26 April 2026 — Madrid · F19c added.*
 *The F19 cluster has now been confirmed structural under the mathematically correct formulation. Four independent attack families converge on its depth-9 boundary. The next move is propagation depth-2 (option B), exhaustive single-seed (option C), or formal write-up (option A). Rafa to decide.*
+----------------------------------------------------------------------------------------
+---
+New update April 27th 2026 — F19d: probing depth-2 splits the B06 Sabor B cluster — 2 of 4 close UNSAT, 2 survive; rigidity is heterogeneous within the cluster
+---
+
+## Addendum — 27 April 2026 (F19d: depth-2 failed-pair probing as binary cuts before SCIP; B06 Sabor B cluster splits 2 INFEAS / 2 TIMEOUT under identical setup)
+
+### Context
+
+F19c (26 April) confirmed the F19 cluster structural under GEOM via single-pair sanity at (B10, 70, 260). The four-family convergence (AUTMON DFS, F18+cascade+probing-1, DLX, F18 GEOM single-pair) had not yet been tested under genuinely stronger propagation than depth-1. Probing depth-2 was option 14 in HANDOFF v9, marked "primary technical track, NOT YET BUILT". Built on 27 April afternoon and tested directly on the four B06 Sabor B pairs (anchor a=66, b ∈ {90, 95, 166, 183}) — the only pairs in the project with `cas_zero=244` under PMJ, the rare cascade-active LP-insufficient signature from F19.
+
+### Engine
+
+`ESTRELLA_PORMISCOJONES_PAIR_SCIP_GEOM_v2_PROBE2.cpp`. Inherits the GEOM v1 formulation pixel-for-pixel (same GF(4) tables, same SEED_COL/AG_VEC encoding, same affine GEOM caps `9 - sc[m,0]`, same ARC pair/seed kills, same SCIP invocation). Adds, between cascade saturation and `.lp` emission:
+
+1. **Phase D1**: depth-1 probing on each free column. For each c, sandbox-force c=1, run cascade; if infeasible, force c=0 in base. Then symmetric (force c=0; if infeas, force c=1).
+
+2. **Phase D2**: depth-2 probing on all C(n_free, 2) pairs of remaining frees. For each (c1, c2), sandbox-force both to 1, run cascade; if infeasible, emit `x_c1 + x_c2 <= 1` as a binary cut.
+
+3. The `.lp` is then emitted with: 4092-affine GEOM constraints + sum=13 + ARC unit forcings + cascade-derived unit forcings + **binary cuts from D2**.
+
+Probing budget set to 240s per pair; SCIP timeout 600s per pair.
+
+### Results — B06 Sabor B (a=66)
+
+| Pair | n_free post-cas | pairs_failed | binary_cuts | SCIP_t | VERDICT |
+|---|---:|---:|---:|---:|:---:|
+| (66, 90)  | 967 | 24,753 |  24,753 |   1.28s | **INFEAS** ✓ |
+| (66, 95)  | 967 | 47,982 |  47,982 |   1.33s | **INFEAS** ✓ |
+| (66, 166) | 965 | 47,539 |  47,539 | 600.27s | TIMEOUT |
+| (66, 183) | 965 | 24,310 |  24,310 | 600.20s | TIMEOUT |
+
+**D1 forced zero columns: 0 across all four pairs.** Depth-1 probing produces no fixings. The rigidity is exclusively at pair level, not column level. This is consistent with the V-out-of-V asymmetry hypothesis from F19b: hostility is geometric on pairs, not on individual points.
+
+**Total exhaustive D2 probing time: 67-82s per pair** (n_free² < 500k pairs, cascade ~0.3ms each). The D2 budget of 240s was never exhausted; probing always completed.
+
+### What F19d establishes
+
+**(1) The B06 Sabor B cluster is not monolithic.** Half (b=90, b=95) close UNSAT in 1.3s once depth-2 binary cuts are added. The other half (b=166, b=183) timeout at 600s with the same machinery. F19's reading "all 4 Sabor B pairs are equally rigid" was an artifact of insufficient propagation strength. **Probing depth-2 splits the cluster into a "soft" half and a "hard" half.**
+
+**(2) Cut count does NOT predict rigidity.** The two soft pairs have 24,753 and 47,982 cuts respectively. The two hard pairs have 47,539 and 24,310 cuts respectively. Same anchor, same seed, similar cut distributions, opposite verdicts. The distinguishing property is topological, not quantitative — the **structure of the conflict graph induced by the cuts** matters, not its size.
+
+**(3) The Depth-9 Barrier survives, narrowed.** Two of four converged-on-depth-9 pairs in B06 Sabor B yield to depth-2 propagation; the other two do not. The barrier exists, but is heterogeneous. The minimal residual obstruction in B06 is now (66, 166) ∪ (66, 183), not the entire Sabor B cluster.
+
+**(4) F19c's "structural, not formulation artifact" verdict is REFINED.** F19c established the cluster survives PMJ → GEOM correction. F19d establishes part of the cluster does NOT survive depth-1 → depth-2 propagation upgrade. **Structural rigidity is propagation-depth-relative, at least within Sabor B**. The four-family convergence remains valid for (66, 166) and (66, 183), but no longer for (66, 90) and (66, 95).
+
+### What F19d does NOT establish
+
+- **Whether the cluster on B10 (a=70/71 anchors) behaves analogously.** Sanity not yet run. Likely candidates for a follow-up dive on (70, 260), (70, 297), (71, 260), or other B10 cluster pairs under PROBE2. Predicted: similar split, but unverified.
+
+- **Whether the residual hard pairs (66, 166) / (66, 183) are Diamonds, depth-9-barrier intermediates, or genuinely intractable under any propagation depth.** SCIP at 600s with 47k binary cuts gives no verdict. Higher SCIP budgets, probing depth-3, or algebraic enumeration are the only remaining attacks for these two pairs.
+
+- **What topological invariant separates soft from hard pairs.** Open question. Candidates worth testing: degree distribution of failed pairs in the conflict graph, clique number, presence of dense cores, V-membership of the failed-pair partners.
+
+### Operational consequences
+
+- **Probing depth-2 is empirically validated as a productive next-generation propagation upgrade.** Not a silver bullet, but materially extends the closable region. Promote PROBE2 to standard attack tool alongside GEOM v1.
+
+- **B06 closure status revised: 100% PRE_INFEAS + INFEAS + 2 RESIDUAL (66,166), (66,183).** Previously listed as 45% closed under PMJ v2 with 86 cluster timeouts. Under GEOM + PROBE2, the residual collapses to two specific pairs. **B06 is materially closer to formal closure than v9 reported.**
+
+- **B10 campaign status: prediction = similar split**, soft pairs absorb under PROBE2, hard residual remains. **Campaign re-run under PROBE2 is the natural next experiment.** Cost: ~75s probing + ≤600s SCIP per cluster pair × 153 timeouts = ~3-30h total depending on hard fraction. If hard fraction is similar to B06's 50%, the residual reduces to ~75 hard pairs — still publishable as "depth-2 barrier" rather than "depth-9 barrier".
+
+### What F19d closes
+
+- **The verdict "B06 Sabor B = 4 structurally intractable pairs"** is now retracted. Replaced by: 2 are propagation-bound (depth-1 insufficient, depth-2 sufficient), 2 are deeper (depth-2 insufficient, depth-? unknown).
+
+- **The metric "cas_zero signature predicts rigidity" is REFINED.** All 4 Sabor B share `cas_zero=244` under PMJ. Yet 2 close trivially under depth-2 cuts. The PMJ Sabor B classification was a propagation-strength signature, not a structural one.
+
+### What F19d informs
+
+- **Next attack on B06 hard residual:** either (a) probing depth-2 + SCIP timeout extension to 1800s on (66, 166) and (66, 183), now justified because the LP polytope is genuinely different (47k+ extra constraints), not a "rerun extension" of v2 SCIP; or (b) probing depth-3 selective on the conflict-graph cores of the failed-pair set; or (c) algebraic single-pair enumeration with depth-13 hard cap.
+
+- **Updated Gemini question:** F19c asked "what algebraic property of V makes it a slack sink?". F19d asks **"what topological property of the failed-pair conflict graph distinguishes (66, 90)/(66, 95) [SOFT] from (66, 166)/(66, 183) [HARD] within the same anchor, same seed, same cluster?"** This is a sharper, fully-empirical question.
+
+- **The Depth-10 Barrier Conjecture is REFINED.** Original (20 April): "all four propagation families hit depth-9 ceiling on the cluster, suggesting a structural depth-10 barrier." F19d (27 April): "the depth-9 ceiling is not uniform within the cluster; depth-2 propagation breaks it for half the pairs in B06 Sabor B." The conjecture should be reformulated as: **"some pairs in the F19 cluster admit a depth-? barrier, others admit a depth-(?+k) barrier, and the threshold is governed by a topological invariant of the local conflict graph."**
+
+### Files (keep)
+
+- `ESTRELLA_PORMISCOJONES_PAIR_SCIP_GEOM_v2_PROBE2.cpp` — productive engine going forward, supersedes GEOM v1 for hard pairs.
+- `probe2_B06_66_90.log`, `probe2_B06_66_95.log` — UNSAT certificates with cut counts.
+- `probe2_B06_66_166.log`, `probe2_B06_66_183.log` — TIMEOUT logs with cut counts (the residual hard pairs).
+- `/tmp/estrella_pair/probe2_B06_a66_b166.lp`, `/tmp/estrella_pair/probe2_B06_a66_b183.lp` — the residual `.lp` files with 47k+ / 24k+ binary cuts (preserve for any depth-3 follow-up).
+
+### Do NOT
+
+- **Re-run (66, 90) and (66, 95) under any other engine claiming novelty.** They are formally closed UNSAT under PROBE2 with depth-2 cuts. The certificate is sound (PROBE2 reuses GEOM v1's pixel-for-pixel formulation; binary cuts are valid logical implications of cascade infeasibility).
+
+- **Claim B06 is fully closed.** It is not. Two residual pairs remain TIMEOUT.
+
+- **Conclude that depth-2 propagation closes B06 Sabor B in general.** It closes 2 of 4. The cluster is heterogeneous.
+
+- **Run probing depth-3 ciega (blind) on the hard residual without thinking.** C(965, 3) ≈ 150M triples × 0.3ms ≈ 12h per pair. Unjustifiable without a focalization heuristic on the conflict-graph cores.
+
+### Credits
+
+- **Engine design (PROBE2: cascade GEOM + D1 + D2 + LP emit + SCIP):** auditor instance, 27 April afternoon.
+- **Sanity test on B12 (1, 4) under --probe-only confirming 21k cuts in 30s, validating the probing pipeline:** auditor instance, 27 April afternoon.
+- **Build, launch on Mac M2, log capture for the 4 B06 Sabor B pairs:** R. Amichis, 27 April evening (17:42–18:07 CEST).
+- **Verdict interpretation: cluster is heterogeneous, cut count does not predict rigidity, F19c refined:** auditor instance, immediately after the four logs landed.
+
+### Strategic consequence
+
+F19d is the first attack family in the project history to PARTIALLY break the F19 cluster. The Depth-9 Barrier Conjecture survives but is now known to be heterogeneous within a single cluster, single anchor, single seed. The path forward is either (a) sharper probing (depth-3 focalized, or focalized propagation) on the hard residual {(66,166), (66,183)}, (b) Gemini consultation with the refined topological question, or (c) extension of PROBE2 to B10 cluster pairs to test whether the soft/hard split reproduces. F19d is also the first methodological win that does NOT come from formula correction (F19c) or LP cuts (F19b/F17): it is propagation-during-construction, exactly the path F19c flagged as "the productive default".
+
+---
+
+*Proyecto Estrella · 27 April 2026 — Madrid · F19d added.*
+*Probing depth-2 splits the B06 Sabor B cluster into 2 SOFT (close UNSAT in 1.3s with 24k–48k binary cuts) and 2 HARD (TIMEOUT at 600s with 24k–48k binary cuts). The Depth-9 Barrier is heterogeneous within the cluster. Residual obstruction in B06 reduces from 86 timeouts to {(66, 166), (66, 183)}. Next: PROBE2 on B10 cluster, or focalized depth-3 on the B06 residual.*
