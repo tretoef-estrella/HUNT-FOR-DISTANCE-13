@@ -2218,3 +2218,219 @@ F19d is the first attack family in the project history to PARTIALLY break the F1
 
 *Proyecto Estrella · 27 April 2026 — Madrid · F19d added.*
 *Probing depth-2 splits the B06 Sabor B cluster into 2 SOFT (close UNSAT in 1.3s with 24k–48k binary cuts) and 2 HARD (TIMEOUT at 600s with 24k–48k binary cuts). The Depth-9 Barrier is heterogeneous within the cluster. Residual obstruction in B06 reduces from 86 timeouts to {(66, 166), (66, 183)}. Next: PROBE2 on B10 cluster, or focalized depth-3 on the B06 residual.*
+--------------------------------------------------------
+---
+New update April 27th 2026 (night) — F19e: PROBE2 sweep on B10 cluster — 1/8 SOFT, 7/8 HARD; HARD-pesado / HARD-vacío structural split discovered; B06's 50/50 ratio does NOT replicate
+---
+
+## Addendum — 27 April 2026 night (F19e: PROBE2 sample over 8 representative B10 cluster pairs reveals 12.5% SOFT fraction and two distinct HARD sub-classes)
+
+### Context
+
+F19d (27 April afternoon) closed half of B06 Sabor B (2/4 pairs) under PROBE2. The natural next experiment was extending PROBE2 to the larger B10 cluster (153 timeouts under F18 v2 PMJ) to test whether the SOFT/HARD heterogeneity reproduces cross-seed. Sample size: 8 representative pairs covering both anchors a ∈ {70, 71} and a range of b ∈ {260, 270, 275, 280, 290, 297}. Wall time 18:24–19:44 CEST (~1h 20m).
+
+### Engine
+
+`PORMISCOJONES_PROBE2` (unchanged from F19d), launched via `probe2_B10_cluster_sweep.sh` at `--probe-budget 240 --scip-timeout 600`. Pairs invoked individually with `--single A,B`.
+
+### Results — B10 cluster sample (a ∈ {70, 71})
+
+| (a, b)     | n_free | failed_pairs | binary_cuts | SCIP_t  | VERDICT  | Class       |
+|------------|-------:|-------------:|------------:|--------:|----------|:------------|
+| (70, 260)  | 965    | 24,310       | 24,310      | 600.26s | TIMEOUT  | HARD-pesado |
+| (70, 270)  | 965    | 24,310       | 24,310      | 600.28s | TIMEOUT  | HARD-pesado |
+| (70, 280)  | 967    | 48,603       | 48,603      |   1.25s | INFEAS ✓ | SOFT        |
+| (70, 290)  | 965    |      0       |      0      | 600.18s | TIMEOUT  | HARD-vacío  |
+| (70, 297)  | 967    |      1       |      1      | 600.13s | TIMEOUT  | HARD-vacío  |
+| (71, 260)  | 965    | 24,310       | 24,310      | 600.22s | TIMEOUT  | HARD-pesado |
+| (71, 275)  | 967    | 24,753       | 24,753      | 600.18s | TIMEOUT  | HARD-pesado |
+| (71, 290)  | 967    |      1       |      1      | 600.18s | TIMEOUT  | HARD-vacío  |
+
+**SOFT: 1 / 8 (12.5%). HARD: 7 / 8 (87.5%).** Within HARD: HARD-pesado 5/7, HARD-vacío 3/7.
+
+### What F19e establishes
+
+**(1) B10 does NOT replicate B06's 50/50 SOFT/HARD ratio.** B06 Sabor B was 2/4 SOFT (50%); B10 sample is 1/8 SOFT (12.5%). The hypothesis "depth-2 closes ~half of any reproducible cluster, regardless of seed" is FALSIFIED. Cross-seed heterogeneity is itself heterogeneous: each seed's cluster has its own SOFT fraction.
+
+**(2) Two structurally distinct HARD sub-classes exist.** **HARD-pesado** pairs have 24k–48k binary cuts after exhaustive D2 probing — cascade derives massive local conflict — and yet SCIP cannot close at 600s. **HARD-vacío** pairs have 0–1 binary cuts after the same D2 probing — cascade derives essentially nothing — and SCIP also cannot close. These are two genuinely different obstruction profiles. HARD-pesado looks like "many local conflicts, no global integration"; HARD-vacío looks like "no local conflicts, yet global obstruction exists somewhere".
+
+**(3) HARD-vacío is the more interesting class for the Diamond hypothesis.** A pair where 465k pair-probes find zero contradictions is a pair where the LP polytope locally looks completely consistent. If a Diamond exists in B10, it is more likely to live in a HARD-vacío pair than a HARD-pesado pair, because HARD-pesado pairs already have substantial structural evidence against them (the 24k+ cuts) which the solver cannot turn into a closure but which a future stronger propagation might.
+
+**(4) A Mon-symmetry signature emerges.** Three of the five HARD-pesado pairs have **exactly 24,310** binary cuts, across both a=70 and a=71 anchors and across b ∈ {260, 270} for a=70 and b=260 for a=71. Three independent probings producing identical cut counts to the unit is statistically improbable under random structure. **Hypothesis:** these pairs are projectively equivalent under B10's Mon-automorphism group, and the cuts are the same set up to relabeling. If true, only one of the three needs algebraic closure; the others follow by symmetry. Worth canonicalization check before launching algebraic attacks.
+
+**(5) The 12.5% SOFT projection.** If the B10 cluster's full 153 timeouts behave like the sample, ~19 more SOFT closures are expected, leaving ~134 residual HARD pairs. **B10 is therefore not realistically closeable by depth-2 alone.** Either depth-3, algebraic closure, or a Diamond-only cut (F19f) is needed.
+
+### What F19e does NOT establish
+
+- **The full 153-pair B10 cluster has not been swept**, only 8 representatives. The 12.5% SOFT rate is a sample estimate with wide uncertainty. The full sweep would cost ~24h of Mac M2 time at 25% CPU and is not justified until F19g (the F19f cut integration) is tested first.
+
+- **The HARD-pesado / HARD-vacío classification has only been observed on B10**, not yet on B06 Sabor A or other seeds. Whether the two classes are universal or B10-specific is open.
+
+- **No Diamond was found.** All TIMEOUT verdicts are non-conclusive: SCIP did not close within budget. They could in principle hide a FEAS, but probability is low and decreasing with the F19f cut integration that is the natural next step.
+
+### Operational consequences
+
+- **B06 is now the priority for closure attempts**, not B10. B06 has 2 residual hard pairs after F19d; B10 has ~134 projected residual hard pairs after F19e sample. Closing B06 is dramatically cheaper than closing B10.
+
+- **PROBE2 batch mode (option 14a-full) is downgraded.** Sweeping all 153 B10 timeouts costs ~24h and yields ~19 more SOFT closures + ~134 HARD residual. Not worth the compute unless F19g first proves that the new k ≤ 5 cut materially shifts the SOFT fraction.
+
+- **Algebraic closure of a HARD-vacío pair is the most informative single experiment.** Pick (B10, 70, 290) as the canonical HARD-vacío test case (n_free=965, cuts=0, TIMEOUT). If F19g closes it, we have proof that the new algebraic cut penetrates where propagation alone cannot. If F19g does not close it, the obstruction is global and requires deeper algebra.
+
+### What F19e closes
+
+- **The verdict "B10 cluster is uniformly rigid under depth-9 barrier"** is now retracted. Replaced by: 1/8 of cluster pairs admit closure under depth-2 propagation; the rest split between two structurally distinct HARD classes.
+
+- **The metric "B10 will replicate B06's heterogeneity ratio"** is FALSIFIED. Different seeds have different ratios. The general claim "F19 cluster is heterogeneous" survives, but the specific 50/50 number does not generalize.
+
+### What F19e informs
+
+- **F19f (Gemini Pair Theorem k ≤ 5)** was conceived in part as a response to F19e's HARD-vacío phenomenon: if local probing derives nothing, perhaps a global Diamond-only constraint will. F19g (integration of k ≤ 5 as a SCIP callback) is the operational follow-up.
+
+- **The Mon-symmetry hypothesis (Note 41 in HANDOFF v11)** is now an explicit testable claim: canonicalize the 5 HARD-pesado pairs under B10's Mon group and check whether (70, 260), (70, 270), (71, 260) reduce to the same orbit representative. If yes, only one needs deep attack.
+
+### Files (keep)
+
+- `probe2_B10_cluster_sweep.sh` — launcher script.
+- `probe2_B10_70_{260,270,280,290,297}.log`, `probe2_B10_71_{260,275,290}.log` — verdict logs (8 logs).
+- `/tmp/estrella_pair/probe2_B10_a{70,71}_b{...}.lp` — LP files. Preserve, especially the HARD-vacío `.lp` files (a=70 b=290, a=70 b=297, a=71 b=290) for option 19 retest.
+
+### Do NOT
+
+- **Run all 153 B10 cluster pairs under PROBE2 until F19g is tested.** Wasteful given the 12.5% sample SOFT rate.
+- **Treat HARD-vacío and HARD-pesado as the same class.** They require different attacks.
+- **Project F19e's 12.5% rate onto other seeds (B01, B08, B11, B09).** Each seed has its own ratio. Sample first.
+- **Claim B10 closure progress.** It went from 153 TIMEOUTs (PMJ v2) to ~134 projected HARD residual under PROBE2. Marginal improvement.
+
+### Credits
+
+- **Sweep design (8 representative pairs across a=70/71 anchors):** Claude (lead instance), 27 April night.
+- **Sweep launcher (`probe2_B10_cluster_sweep.sh`):** Claude, 27 April night.
+- **Build, launch on Mac M2, log capture for the 8 B10 pairs:** R. Amichis, 27 April night (18:24–19:44 CEST).
+- **Verdict interpretation: HARD-pesado vs HARD-vacío structural split, B10 ≠ B06 ratio falsification, Mon-symmetry hypothesis on the 24,310 triplet:** Claude, immediately after the 8 logs landed.
+
+### Strategic consequence
+
+F19e is the first cross-seed comparison of cluster heterogeneity in the project. The result is asymmetric: B06 is materially softer than B10 under the same attack. The HARD-vacío class is the new geometrically distinguished phenomenon — a pair where neither propagation nor LP relaxation finds anything, yet SCIP cannot close. The path forward is option (B) F19g — integrate the new k ≤ 5 algebraic cut (F19f) and retest on a HARD-vacío pair. If F19g closes UNSAT a HARD-vacío where PROBE2 alone TIMEOUT, the algebraic cut is operationally proven and merits broader deployment.
+
+---
+
+*Proyecto Estrella · 27 April 2026 night — Madrid · F19e added.*
+*PROBE2 sweep on 8 B10 cluster pairs: 1/8 SOFT, 7/8 HARD. HARD splits into HARD-pesado (24k+ cuts, TIMEOUT) and HARD-vacío (0–1 cuts, TIMEOUT). B06's 50/50 ratio does NOT replicate on B10. Mon-symmetry triplet at 24,310 cuts identified. Next: F19g — integrate Gemini Pair Theorem k ≤ 5 cut and retest a HARD-vacío pair.*
+
+---
+New update April 27th 2026 (night) — F19f: Gemini Pair Theorem proved algebraically and validated empirically on E1* — every PG(3,4) inside a load-9 hyperplane of a hypothetical Diamond has load ≤ 5
+---
+
+## Addendum — 27 April 2026 night (F19f: Gemini-derived Pair Theorem k ≤ 5 — first algebraic theorem of the campaign produced via external consultation, with empirical validation on E1*)
+
+### Context
+
+After F19e exposed the HARD-vacío phenomenon (B10 cluster pairs where PROBE2 derives 0–1 cuts and SCIP cannot close), the question became: is there a Diamond-specific algebraic constraint, derivable from the existing structural results, that PROBE2 misses by construction? The 6→10 Gap Theorem (14 April) bounds PG(3,4) loads inside the load-10 hyperplane of an E1 code; the natural analog for the Diamond would bound PG(3,4) loads inside its load-9 hyperplanes (which exist by N₉ ≥ 2, Result 4). A targeted algebraic question was sent to Gemini.
+
+### The question
+
+Sent to Gemini in a single prompt, with the 6→10 proof attached as a model: given two distinct hyperplanes H₁ ≠ H₂ in PG(5,4) with |C ∩ H₁| = |C ∩ H₂| = 9 in a hypothetical Diamond C, what bound applies to k = |C ∩ H₁ ∩ H₂| (load of the PG(3,4) intersection)? Required output: closed inequality with proof, optional forbidden-value gap, structural description, and a one-line operational summary.
+
+### Gemini's answer (verified line-by-line by Claude)
+
+**Theorem (Gemini, 27 April night):** For any hyperplane H₁ with |C ∩ H₁| = 9 and any PG(3,4) S ⊂ H₁ in a hypothetical [22,6,13]_4:
+
+|C ∩ S| ≤ 5
+
+**Proof.** S is contained in exactly 5 hyperplanes of PG(5,4): H₁, H₂, H₃, H₄, H₅. The complements (Hᵢ \ S) partition the remaining points of PG(5,4). Partition |C| = 22:
+
+|C| = |C ∩ S| + Σᵢ₌₁⁵ |C ∩ (Hᵢ \ S)|
+
+Let x = |C ∩ S|. Substituting |C ∩ Hᵢ| - x = |C ∩ (Hᵢ \ S)| and using |C ∩ H₁| = 9:
+
+22 = x + (9 - x) + Σᵢ₌₂⁵ (|C ∩ Hᵢ| - x)
+22 = 9 + Σᵢ₌₂⁵ (|C ∩ Hᵢ| - x)
+13 = Σᵢ₌₂⁵ (|C ∩ Hᵢ| - x)
+
+Each |C ∩ Hᵢ| ≤ 9 by the Diamond condition, so |C ∩ Hᵢ| - x ≤ 9 - x. Summing 4 terms:
+
+13 ≤ 4(9 - x)  ⇒  4x ≤ 23  ⇒  x ≤ 5.75  ⇒  x ≤ 5  (integer).
+
+**Forbidden-value gap.** Loads 6, 7, 8, 9 are forbidden for PG(3,4) inside any load-9 hyperplane of the Diamond. Lower bound: trivial (x ≥ 0); no useful nonzero lower bound derivable from this partition alone.
+
+**Operational summary.** The bound applies to all 341 PG(3,4) inside any load-9 hyperplane, not only intersections of two load-9 hyperplanes. (Originally Gemini's first answer; verified by a follow-up scoping question.) Total cuts available per Diamond candidate: N₉ × 341, where N₉ ≥ 2.
+
+### Empirical validation on E1* (27 April night)
+
+**Engine:** `ESTRELLA_GEMINI_PAIR_TEST_v2.cpp`. Loads E1*, computes hyperplane loads, identifies the 130 load-9 hyperplanes, enumerates the 341 PG(3,4) inside each via projective canonical coset minima, computes |C ∩ S| for each, and reports the distribution.
+
+**Result:**
+
+- Hyperplane load histogram: {1: 2, 2: 75, 3: 180, 4: 230, 5: 212, 6: 225, 7: 180, 8: 130, 9: 130, 10: 1}. N₉ = 130, N₁₀ = 1 (consistent with E1*'s known excess = 1).
+- 130 load-9 HPs × 341 PG(3,4) per HP = **44,330 PG(3,4) tested.**
+- PG(3,4) load histogram: {0: 3020, 1: 10910, 2: 13020, 3: 9040, 4: 6340, 5: 1980, 6: 20}.
+- **Max PG(3,4) load observed: 6.**
+- **20 violations** (load 6 instances, all in load-9 HPs). Distributed: 2 violations per HP across 10 specific load-9 HPs.
+
+### Interpretation
+
+The 20 violations are EXPECTED, not falsifying. Gemini's proof requires global max-load ≤ 9 in the code under analysis. E1* has one hyperplane at load 10. The proof step "|C ∩ Hᵢ| ≤ 9 for i ∈ {2..5}" can FAIL if H₀ (the load-10 HP) is among the 4 secondary hyperplanes through S, in which case |C ∩ H₀| - x = 10 - x can exceed 9 - x by 1. This pushes the upper bound by 1 and admits load-6 PG(3,4). Empirically: exactly 20 load-6 instances, all in HPs where H₀ is one of the 4 "other" HPs — consistent with the relaxed proof analysis.
+
+**Conclusion:** the theorem is genuinely Diamond-specific. It does NOT hold for excess-1 codes. As a Diamond filter the cut is sound: any candidate matrix that has N₁₀ = 0 (max-load ≤ 9 globally) AND a PG(3,4) inside a load-9 HP at load ≥ 6 cannot be the Diamond.
+
+### Geometric structure of the 20 violators
+
+The 20 violating PG(3,4) live in 10 load-9 HPs (2 per HP). Those 10 HPs are likely the load-9 HPs whose intersection with H₀ is itself a "high-load" PG(3,4) inside H₀ — but the 6→10 Gap Theorem forbids load ≥ 7 inside H₀, so the actual mechanism is more subtle. A precise characterization of the 10 "bad" HPs would yield a sharper sub-theorem for excess-1 codes. **Open question (low priority, ~30 min of analysis).**
+
+### Implementation notes
+
+**v1 of the verifier had a canonicalization bug.** The visited-set marked only the GF(4)^6 coset {h₂ + λ·h₁ : λ ∈ GF(4)} (size 4) but did not account for projective scalar equivalence h ~ μ·h. As a result each PG(3,4) was double-counted approximately 3 times, producing 114,934 instances instead of 44,330 and 50 violations instead of 20. **v2 fixed this** via a min-canonical-coset enumeration: for each (h₁, h₂) candidate, compute the 4 projective points {canon(h₂ + λ·h₁) : λ ∈ GF(4)} and process only when h₂ is the lex-smallest non-h₁ element. v2 produces the correct count (44,330 = 130 × 341) and the correct violation count (20). **All v2 results are correct; do not reuse v1 enumeration logic.**
+
+### Operational consequence
+
+The cut |C ∩ S| ≤ 5 is metible as a SCIP lazy constraint:
+
+- **Detection:** in any partial assignment where |C ∩ Hⱼ| has reached 9 for some hyperplane Hⱼ and global max-load is still ≤ 9.
+- **Action:** for each of the 341 PG(3,4) ⊂ Hⱼ, post the constraint Σ_{p ∈ PG(3,4)} x_p ≤ 5 as a lazy cut.
+- **Cardinality:** N₉ × 341 cuts per candidate, where N₉ is the count of load-9 HPs at the moment of detection. Since N₉ ≥ 2, at least 682 cuts are always available.
+
+**Integration into PORMISCOJONES (F19g) is the proposed next engineering step.** Estimated work: ~1 day. Test: relaunch (B10, 70, 290) — a HARD-vacío pair from F19e — under the new engine. If SCIP closes UNSAT where PROBE2 alone TIMEOUT, the cut is operationally validated as a Diamond-only constraint that penetrates HARD-vacío.
+
+### What F19f closes
+
+- **The question "is there an algebraic Diamond-specific cut not derivable from local propagation?"** Yes: |C ∩ S| ≤ 5 for PG(3,4) ⊂ load-9 HP. Proven and validated.
+
+- **The hypothesis "Gemini cannot produce useful algebraic input for the Diamond problem"** is FALSIFIED by F19f. The successful prompt characteristics are documented in HANDOFF v11 (rhythm section, 27 April night lesson re Gemini).
+
+### What F19f opens
+
+- **F19g (integration as SCIP callback)** — proposed. Engineering, not theoretical.
+
+- **F19h (sharper sub-theorem for excess-1 codes)** — characterize the 10 "bad" HPs of E1* (those containing 2 PG(3,4) at load 6). Likely produces a refined statement like "for excess-1 codes with H₀ at load 10, the PG(3,4) inside a load-9 HP have load ≤ 6, with equality on exactly N specific PG(3,4) determined by their intersection with H₀". Low priority, ~30 min of analysis.
+
+- **F19i (extension to higher load HPs)** — does an analogous bound hold for PG(2,4) inside load-9 HPs of the Diamond? PG(2,4) has 21 points and lies in q² + q + 1 = 21 hyperplanes of PG(5,4). The analogous partition argument may produce a bound. Worth Gemini follow-up.
+
+### Files (keep)
+
+- `ESTRELLA_GEMINI_PAIR_TEST_v2.cpp` — empirical PG(3,4) load checker on E1*. Reusable on any 6×22 candidate (change the `E1_STAR` hardcoded matrix).
+- `gemini_pair_test_v2.log` — F19f validation log.
+- The Gemini conversation transcript (preserved by Rafa) — contains the original prompt, Gemini's first answer, the scoping follow-up question, and Gemini's clarified general statement. Reference for any future Gemini prompts.
+
+### Do NOT
+
+- **Add the k ≤ 5 cut as a static constraint.** It is dynamic — depends on which HPs are load-9 in the partial assignment. Static enforcement over-prunes.
+- **Add the cut to non-Diamond search engines** (e.g. excess-1 search). E1* violates it 20 times. The cut is Diamond-only.
+- **Treat F19f's 20 E1* violations as a falsification of the theorem.** They are expected — the proof requires N₁₀ = 0, which E1* violates. Read the proof carefully before assuming anything.
+- **Claim Gemini "found the theorem" without verification.** Gemini's first answer overgeneralized; a scoping follow-up was required to nail the correct scope. Always verify Gemini's algebraic claims line-by-line before committing them to documentation.
+
+### Credits
+
+- **Question design (closed algebraic prompt with the 6→10 Gap as a model):** Claude (lead instance), 27 April night.
+- **Theorem proof:** Gemini, 27 April night, validated by Claude line-by-line.
+- **Scoping follow-up (clarifying that the bound applies to ALL PG(3,4) inside load-9 HPs, not only intersections of two load-9 HPs):** Claude, immediately after Gemini's first answer.
+- **Empirical verifier `ESTRELLA_GEMINI_PAIR_TEST_v2.cpp` (with v1 bug fix on projective canonicalization):** Claude, 27 April night.
+- **Build, launch, log capture on Mac M2:** R. Amichis, 27 April night.
+
+### Strategic consequence
+
+F19f is the first algebraic theorem of the campaign produced via external consultation. It is genuinely new: not derivable from F18's pair-forcing, not derivable from F19d's depth-2 propagation, and not present in any prior Phase 1 result. It produces 682+ Diamond-only cuts per candidate, all dynamic. The path forward is F19g — integrate the cut as a SCIP lazy constraint and retest on the most informative HARD-vacío pair from F19e (e.g. (B10, 70, 290) — failed_probe = 0, TIMEOUT, no local conflict). If the algebraic cut closes UNSAT a HARD-vacío where PROBE2 alone could not, F19f is operationally proven and the campaign moves into a new phase: algebraic-cut-augmented PROBE2 sweeps on remaining seeds.
+
+---
+
+*Proyecto Estrella · 27 April 2026 night — Madrid · F19f added.*
+*Gemini Pair Theorem proved and validated: every PG(3,4) inside a load-9 hyperplane of a hypothetical Diamond contains ≤ 5 code points. Diamond-specific (E1* violates it 20 times as expected). 682+ cuts available per candidate via SCIP lazy callback. v1 of the verifier had a projective canonicalization bug (overcounted 3×); v2 fixed via min-canonical-coset enumeration. Next: F19g — integrate as SCIP callback, retest (B10, 70, 290) HARD-vacío.*
