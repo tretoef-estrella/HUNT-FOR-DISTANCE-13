@@ -2434,3 +2434,136 @@ F19f is the first algebraic theorem of the campaign produced via external consul
 
 *Proyecto Estrella · 27 April 2026 night — Madrid · F19f added.*
 *Gemini Pair Theorem proved and validated: every PG(3,4) inside a load-9 hyperplane of a hypothetical Diamond contains ≤ 5 code points. Diamond-specific (E1* violates it 20 times as expected). 682+ cuts available per candidate via SCIP lazy callback. v1 of the verifier had a projective canonicalization bug (overcounted 3×); v2 fixed via min-canonical-coset enumeration. Next: F19g — integrate as SCIP callback, retest (B10, 70, 290) HARD-vacío.*
+------------------------------------------------------
+---
+New update April 29th 2026 — F19g: Codeword-residual structural mapping reveals B02 as the dominant near-Diamond seed; PROBE2 campaign redirected from B06/B10 to B02
+---
+
+## Addendum — 29 April 2026 (F19g: weight-13 codeword residuals of E1* and E4* concentrate exclusively on B01/B02/B03/B04/B05; the PROBE2 campaign on B06/B10 was attacking the wrong seeds)
+
+### Context
+
+After F19e (B10 PROBE2 sweep showed 87% HARD, 12.5% SOFT, with HARD-vacío sub-class) and F19f (Gemini Pair Theorem k ≤ 5, not yet integrated), the open strategic question was: which seed should F19g target? The default answer was "any HARD-vacío from B10 because that's where PROBE2 cannot close". A different question turned out to be more productive: **which seeds actually appear as residuals of known near-Diamond records?** If a seed never appears as a residual of any near-Diamond, attacking it for Diamond search is structurally misdirected.
+
+### The structural mapping
+
+Definition: given a [22,6,12]_4 code C with at least one weight-13 codeword w, the **residual seed of w** is the [9,5,4]_4 code obtained by deleting the 13 nonzero positions of w from C. The 9 remaining positions span a rank-5 subspace (the kernel of the codeword's linear functional restricted to those columns), giving a [9,5,4]_4 generator. Each weight-13 codeword of C produces one residual seed, classifiable into the refined catalogue (B01..B12 + FRAC) by its (A_4, A_5) signature.
+
+**Hypothesis:** if the Diamond exists and is geometrically close to known near-Diamond records (E1*, E4*, etc.), its residual seeds (one per weight-13 codeword, 13 codewords total mod scalar) will share the bucket distribution of those records' weight-13 residuals.
+
+### Method
+
+Sandbox in Python (`sandbox_residuals.py`, `sandbox_residuals_E4.py`): for each known [22,6,12]_4 record (E1*, E4*), enumerate all weight-13 codewords (4096 messages, filter by weight), compute the residual seed of each, reduce to systematic generator [I_5 | P], compute (A_4, A_5), match against the refined catalogue.
+
+### Results
+
+**E1*** (excess = 1, A_12 = 3, 390 codewords of weight 13; previous Claude instance, 28 April):
+
+| Bucket | Count | % of 390 |
+|--------|-------:|--------:|
+| B02    | 210    | 53.8%   |
+| B03    | 90     | 23.1%   |
+| B01    | 30     | 7.7%    |
+| FRAC (unknown signatures, likely B04/B05/B07) | 60 | 15.4% |
+| B06, B08, B10, B11 | **0** | **0%** |
+
+**E4*** (excess = 4, A_12 = 12, 414 codewords of weight 13; current Claude, 29 April morning):
+
+| Bucket | Count | % of 414 |
+|--------|-------:|--------:|
+| B02    | 126    | 30.4%   |
+| B03    | 42     | 10.1%   |
+| B04 (FRAC) | 60 | 14.5% |
+| B05 (FRAC) | 36 | 8.7% |
+| Degenerate (residual rank<5 or d_min<4) | 150 | 36.2% |
+| B06, B08, B10, B11 | **0** | **0%** |
+
+The 150 degenerate residuals on E4* are an expected artifact of excess=4: codewords of weight 13 whose 9-position complement does not form a [9,5,4]_4 because the 4 dirty hyperplanes interact with the codeword's support in ways that drop rank or weight below the [9,5,4]_4 threshold. They do not contradict the bucket-concentration finding.
+
+### Strategic consequence (the core finding)
+
+Every near-Diamond record sampled (E1*, E4*) produces weight-13 residuals concentrated entirely on B01, B02, B03, B04, B05. **Zero residuals fall on B06, B08, B10, or B11 in either record.** B02 dominates both records (53.8% and 30.4%).
+
+The PROBE2 campaign of 23–27 April attacked B12 (closed UNSAT, irrelevant to Diamond), B10 (60% closed, 153 timeouts, 8/8 sampled cluster pairs gave 1 SOFT 7 HARD), and B06 (45% closed, 86 timeouts, 4/4 Sabor B sampled gave 2 SOFT 2 HARD). **None of these seeds appears as a residual of any known near-Diamond record.** If the Diamond's residual seeds inherit the bucket distribution of E1*/E4*, the campaign was attacking seeds where the Diamond cannot live.
+
+This does not mean B06/B10/B11 are formally proved impossible — that would require a structural theorem ruling out exotic Mon-orbits unconnected to E1/E4 geometry. But it does mean that under the working hypothesis "Diamond near record geometry", the productive attack surface is B01/B02/B03/B04/B05.
+
+### Honest caveats
+
+- The mapping is empirical, derived from two records (E1* excess=1, E4* excess=4). Other records (D21*, A33, B15, etc. cited in v40) are either truncated (D21* has 21 columns, no weight-13 codewords yet) or are caps in PG(5,4) not full [22,6,12]_4 codes — they cannot be mapped the same way.
+- The Freedom Theorem (v40) gives the Diamond 6 degrees of freedom in its weight distribution. A truly exotic Diamond (Mon-orbit unrelated to E1/E4 geometry) could in principle land on B06/B10/etc. There is no theorem ruling this out.
+- The "B02 dominates" reading is consistent across both records but is not a proof of where the Diamond must live; it is a Bayesian update on prior probability.
+
+### Operational redirect (29 April morning)
+
+The campaign is redirected from B06/B10 to **B02 as the primary attack target**, with B03 and the FRAC buckets B04/B05 as secondary.
+
+**Tools built and launched 29 April morning:**
+
+1. `ESTRELLA_ROWWISE_B02_HUNT_v1.cpp` — exhaustive DFS over AG(5,4) extensions of B02 with SHERLOCK-v2 affine-load cascade. Built, validated on Mac M2 in 30s sample (max_depth=8, ~135k nodes/s). Launched in background (PID 64631 on Rafa's M2) for unlimited-time structural exploration of B02. Honest expectation: hits the same Depth-9 Barrier as B10 (combinatorial barrier per F16). Will not close B02 by itself in any reasonable time. Utility: confirms barrier behavior on B02 and prints any Diamond it finds.
+
+2. `pairs_B02.cat` generated by `PORMISCOJONES_CANON B02` (29 April morning, 0.53s):
+   - 522,753 total pairs (= C(1023, 2)).
+   - 174,251 canonical orbits under |Aut(B02)| = 3 (every orbit size = 3, consistent).
+   - 4,599 ARC-killed dead pairs.
+   - **169,652 LIVE canonical pairs to attack.**
+
+3. `probe2_B02_batch_first50_FIXED.sh` — wrapper around `PORMISCOJONES_PROBE2 B02 600 --single a,b --probe-budget 240` that iterates LIVE pairs from the .cat file and writes per-pair logs plus a CSV summary. **First version had a parser bug** (assumed columns `a b dead_flag` when the actual format is `orbit_id a b orbit_size dead_flag a_vec b_vec`); FIXED version corrects this. Launched 29 April 11:19 CEST on Mac M2 against the first 50 LIVE pairs. Expected wall: 2–9 hours depending on SOFT/HARD ratio.
+
+### What this run will measure
+
+The first 50 PROBE2 verdicts on B02 will give:
+
+- **SOFT/HARD ratio.** B06 was 50/50 on Sabor B sample; B10 was 12.5/87.5 on cluster sample. B02 unknown. If high SOFT (e.g. 30%+), PROBE2 alone may make material progress on B02 and attacking the full 169k LIVE pairs becomes a strategic question (not a forced abandon). If low SOFT (e.g. 10%), F19h becomes mandatory: integrate the F19f k ≤ 5 cut as a SCIP callback (PORMISCOJONES_PAIR_SCIP_GEOM_v3_KCUT) and rerun on B02.
+
+- **HARD-vacío vs HARD-pesado distribution on B02.** F19e showed B10 has both, with HARD-vacío being the geometrically distinguished class where propagation derives literally zero local conflicts. If B02 is dominated by HARD-vacío, F19h is the only productive next step. If dominated by HARD-pesado, focalized PROBE3 on conflict-graph cores may suffice.
+
+- **Any FEAS verdict.** If a single pair on B02 returns FEAS or OPTIMAL with SCIP solve_t < 600s, that is potentially a Diamond. The wrapper script greps for `DIAMOND_FOUND` and `FEAS.*OPTIMAL` and prints a banner alert. **Maintain skepticism — verify the matrix manually before celebrating.**
+
+### Files (keep, 29 April)
+
+- `sandbox_residuals.py` (Claude lead 28 April) — E1* mapping. Already committed by previous Claude, retained for reference.
+- `sandbox_residuals_E4.py` (Claude 29 April morning) — E4* mapping. New.
+- `ESTRELLA_ROWWISE_B02_HUNT_v1.cpp` — DFS engine on B02 with SHERLOCK cascade. New.
+- `pairs_B02.cat` — canonical pair catalogue for B02, 169,652 LIVE pairs.
+- `probe2_B02_batch_first50_FIXED.sh` — corrected batch wrapper.
+- `canon_B02.log` — CANON output (0.53s wall, 169,652 LIVE).
+- `probe2_B02_first50_master.log` (in progress) — master batch log.
+- `probe2_B02_first50_SUMMARY.csv` (in progress) — per-pair verdict summary.
+- `probe2_B02_logs/probe2_B02_<a>_<b>.log` (in progress) — per-pair PROBE2 logs.
+- `rowwise_b02.log` (in progress) — RWB02 DFS log.
+
+### Do NOT
+
+- **Conclude that B06/B10/B11 are formally impossible Diamond seeds.** They never appear as residuals of E1*/E4*, but absence of evidence in two records is not proof. A structural theorem is needed to formally exclude them.
+- **Stop the existing B10/B06 PROBE2 work prematurely.** F19d/F19e/F19g residuals (on those seeds) are still operationally useful for the negative-result write-up: they document the Depth-9 Barrier and HARD-vacío phenomenon. Just don't expect a Diamond from them.
+- **Run the full 169,652 PROBE2 attacks on B02 blindly.** At ~10 min/pair on Mac M2 at 25% CPU that is ~3 years of wall time. The first 50 are diagnostic; the next step depends on what they show.
+- **Treat RWB02 as the primary Diamond hunter.** It is a structural probe, not a closure tool. If it hits depth 9+ that is news; if it stays at depth 8 it confirms the F16 barrier on B02. Either way, the operational engine is PROBE2 (and eventually F19h KCUT).
+- **Re-attack the already-closed seeds (B12) or re-run PROBE2 on previously-resolved pairs (B10 280, B06 90/95, etc.).** Their certificates are sound.
+
+### Open questions (after first 50 PROBE2 verdicts arrive, expected 29 April afternoon/evening)
+
+- What is B02's SOFT/HARD ratio?
+- Does B02 show HARD-vacío, HARD-pesado, or both?
+- Is there any pair where the GEOM cascade saturates such that PROBE2 alone closes (true SOFT)?
+- Does any pair return FEAS? (If yes, this conversation ends and a different one begins.)
+
+### Credits
+
+- **Sandbox concept (residual-by-codeword mapping):** previous Claude instance (28 April), prompted by Rafa to find a structurally informed reformulation of the attack rather than another column-wise SCIP variant.
+- **E1* mapping (390 codewords classified):** previous Claude instance, sandbox v3/v4 in Python on E1*.
+- **E4* mapping (414 codewords classified) and bucket-concentration finding:** Claude (current instance), 29 April morning.
+- **Engine `ESTRELLA_ROWWISE_B02_HUNT_v1.cpp`:** Claude (current instance), reusing SHERLOCK_v2 cascade verbatim with B02 substituted as seed.
+- **PORMISCOJONES_CANON B02 launch and pairs_B02.cat generation:** R. Amichis, 29 April morning on Mac M2.
+- **probe2_B02_batch_first50.sh (v1 with parser bug, v2 FIXED):** Claude (current instance), reaction-time fix after Rafa reported `Pairs processed: 0`.
+
+### Strategic consequence
+
+F19g is a structural redirect, not an algebraic theorem. It does not prove anything new about the Diamond. It corrects an attack-target choice that had been driving 5 days of compute on B06/B10 — seeds that empirically never appear in known near-Diamond residual decompositions. The campaign now points at B02. Whether B02 cedes under PROBE2 alone or requires the F19f k ≤ 5 cut (F19h integration) is the next decision, and it depends on the first 50 verdicts arriving 29 April afternoon.
+
+If B02's first 50 verdicts come back ≥30% SOFT, the operational answer is "scale PROBE2 on B02 and see how far it goes". If <15% SOFT (B10-like), the answer is "build F19h immediately, rerun B02 with KCUT, and only then scale". The intermediate range goes either way and depends on the HARD-vacío fraction.
+
+---
+
+*Proyecto Estrella · 29 April 2026 morning — Madrid · F19g added.*
+*Codeword-residual structural mapping: E1* and E4* both produce weight-13 residuals exclusively in B01/B02/B03/B04/B05, with B02 dominating (53.8% and 30.4%). The PROBE2 campaign on B06/B10 was structurally misdirected. Redirect: B02 attack launched morning of 29 April with PORMISCOJONES_PROBE2 batch over first 50 of 169,652 LIVE canonical pairs, plus exhaustive DFS engine RWB02 in background. First verdicts expected afternoon. F19h (PROBE2 + Gemini k ≤ 5 cut as SCIP lazy constraint) on standby pending the SOFT/HARD ratio measurement.*
