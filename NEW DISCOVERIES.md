@@ -2445,3 +2445,81 @@ The first 50 PROBE2 verdicts on B02 will give:
 
 *Proyecto Estrella · 29 April 2026 morning — Madrid · F19g added.*
 *Codeword-residual structural mapping: E1* and E4* both produce weight-13 residuals exclusively in B01/B02/B03/B04/B05, B02 dominating (53.8%, 30.4%). PROBE2 redirected from B06/B10 to B02. First-50 batch launched morning 29 April; F19h (k ≤ 5 SCIP cut) on standby pending SOFT/HARD ratio.*
+----------------------------------------------------------
+## Addendum — 30 April 2026 morning (F19g extended: B02 PROBE2 batch confirms uniform collapse at 100% SOFT, 0.32% coverage, plus discrete five-class cut structure and RWB02 depth-11)
+
+This is a continuation of F19g (29 April) with empirical batch results.
+
+### Batch results (B02, PORMISCOJONES_PROBE2 single-pair, single-worker on Mac M2, 25% CPU)
+
+| Batch | Pairs | Verdict | Wall (mediano) | Wall total |
+|-------|-------|---------|----------------|------------|
+| v1 (`probe2_B02_batch_first50_FIXED.sh`) | 50 | 50 INFEAS, 0 TO, 0 FEAS | ~110s | ~1h 45min |
+| v2 (`probe2_B02_batch_NEXT500.sh`) | 500 | 500 INFEAS, 0 TO, 0 FEAS | ~108s | ~15h |
+| **Total** | **550** | **550 INFEAS, 0 TIMEOUT, 0 FEAS** | **~107s** | **~16.5h** |
+
+Coverage: 550 / 169,652 LIVE pairs = **0.32% of B02's canonical pair catalogue**. All sampled pairs share `a=1` with `b ∈ [4, 571]` of 1023 possible values.
+
+### Five discrete cut-count classes (NEW structural finding)
+
+PROBE2 derives binary cuts in five distinct discrete clusters across the 550-pair sample:
+
+| Class | Cut range | Wall range | Frequency in sample |
+|-------|-----------|-----------|---------------------|
+| **Class 0 (ULTRA-LIGHT)** | 195 – 249 | 100 – 162s | ~7% (appears from pair ~331 onward) |
+| **Class A** | 24,531 – 25,200 | 90 – 166s | ~24% |
+| **Class B** | 47,631 – 49,057 | 90 – 130s | ~46% (most common) |
+| **Class C** | 70,794 – 73,102 | 100 – 132s | ~13% |
+| **Class D** | 93,279 – 115,924 | 110 – 135s | ~10% |
+
+Approximate numerical relationships: B ≈ 2A, C ≈ 3A, D ≈ 4A. Class 0 is qualitatively different (orders of magnitude fewer cuts). **Critically: even Class 0 closes UNSAT in normal wall time — there is no HARD class on B02 in this sample.** This is the closest analog on B02 to F19e's HARD-vacío phenomenon on B10, but with a fundamentally different operational outcome: **PROBE2 alone is sufficient on B02**, the F19f Pair Theorem k ≤ 5 cut is not needed.
+
+### Cross-seed comparison (PROBE2)
+
+| Seed | Sample | SOFT | HARD-pesado | HARD-vacío |
+|------|--------|------|-------------|------------|
+| B06 (Sabor B) | 4 | 2 (50%) | 2 (50%) | 0 |
+| B10 (cluster) | 8 | 1 (12.5%) | 5 (62.5%) | 3 (25%) |
+| **B02** | **550** | **550 (100%)** | **0** | **0** |
+
+B02 is qualitatively different from B10 and B06 against PROBE2.
+
+### RWB02 reached max_depth=11 (NEW structural finding)
+
+`ESTRELLA_ROWWISE_B02_HUNT_v1.cpp` ran exhaustive DFS over AG(5,4) extensions of B02 in background for 4h 46min on 29 April afternoon, reaching `max_depth=11` on path `[0, 1, 4, 96, 304, 637, 661, 842, 883, 941, 951]` at t=17141s, 3.232 billion nodes explored, ~188k nodes/s. Engine accidentally killed when its launching terminal was closed (no `nohup`/`disown`).
+
+**This is the first time in the campaign that any engine has surfaced max_depth ≥ 11 on any seed.** F16 documented the Depth-9 Barrier as combinatorial on B10 across three independent attack families. **F19g extended confirms the barrier is seed-specific, not universal**: B02 admits depth-11 partial extensions in DFS where B10 cannot. No DIAMOND_FOUND banner emitted in the explored sub-branch.
+
+### Strategic consequence
+
+Three independent signals converge on B02 being **materially weaker against algebraic attack than B06/B10**: (1) PROBE2 closes 100% in pair-attack regime, (2) DFS reaches depth 11 (vs depth 9 on B10), (3) cut structure is heterogeneous-but-uniformly-closing (no HARD-vacío equivalent). Combined with F19g's residual mapping (B02 dominates near-Diamond residuals at 53.8%/30.4% on E1*/E4*), the working hypothesis is: **the Diamond, if it exists, does not live on B02**, since B02 is precisely the seed where algebraic obstruction is weakest. This is statistical evidence at 0.32% coverage, not formal closure.
+
+**F19h (PORMISCOJONES + Pair Theorem k ≤ 5 cut as SCIP callback) is demoted from mandatory to optional.** Original trigger ("B02 SOFT < 15%") not met; actual ratio is 100%. Keep F19h on shelf for future seeds where TIMEOUT may appear (B03, FRAC).
+
+### Files (keep, 30 April)
+
+- `probe2_B02_first50_master.log`, `probe2_B02_first50_SUMMARY.csv` — batch v1 outputs (50 pairs).
+- `probe2_B02_NEXT500_master.log`, `probe2_B02_NEXT500_SUMMARY.csv` — batch v2 outputs (500 pairs).
+- `probe2_B02_logs/probe2_B02_*.log` — 550 per-pair PROBE2 logs.
+- `rowwise_b02.log` — RWB02 narration truncated at t=17170s, max_depth=11 confirmed.
+
+### Do NOT
+
+- Claim "B02 closed UNSAT" at 0.32% coverage. The remaining 99.68% includes all `a≠1` pairs.
+- Run batches without `nohup`/`disown`; they die with the terminal. RWB02 was lost this way.
+- Build F19h pre-emptively for B02. Demoted to optional.
+- Round or smooth the five cut-classes; they are real discrete structure tied to Aut(B02)=3 orbit substructure.
+- Restart RWB02 expecting closure. Tree size ≥10²⁰; depth-11 was a probe, not a search.
+- Run 4 parallel workers on Mac M2 (Rafa's hardware constraint, single-worker only).
+
+### Credits
+
+- **B02 PROBE2 batches v1 + v2 launches and 16.5h supervision:** R. Amichis, Mac M2, 29–30 April.
+- **Batch wrapper scripts (parser bug fix included):** Claude (current instance), 29 April morning.
+- **Discrete five-class cut-structure observation:** Claude (current instance), 29–30 April real-time analysis of batch output.
+- **RWB02 max_depth=11 capture:** RWB02 engine itself, 29 April afternoon background run on Mac M2.
+
+---
+
+*Proyecto Estrella · 30 April 2026 morning — Madrid · F19g extended.*
+*B02 PROBE2 batch: 550/550 INFEAS at 0.32% coverage, no HARD class observed, five-discrete-cut-class structure documented, RWB02 hit depth-11. F19h demoted to optional. Next: stratified `a≠1` sampling, or pivot to B03, or algebraic investigation of cut-classes. Rafa to decide.*
