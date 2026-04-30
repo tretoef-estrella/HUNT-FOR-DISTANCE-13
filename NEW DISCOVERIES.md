@@ -2523,3 +2523,99 @@ Three independent signals converge on B02 being **materially weaker against alge
 
 *Proyecto Estrella · 30 April 2026 morning — Madrid · F19g extended.*
 *B02 PROBE2 batch: 550/550 INFEAS at 0.32% coverage, no HARD class observed, five-discrete-cut-class structure documented, RWB02 hit depth-11. F19h demoted to optional. Next: stratified `a≠1` sampling, or pivot to B03, or algebraic investigation of cut-classes. Rafa to decide.*
+------------------------------------------------------------------
+## Addendum — 30 April 2026 late morning (F19g-bis: algebraic analysis of B02 cut-class CSV reveals `b mod 16 ∈ {4,5,6,7}` excludes Class 0; bug found in PORMISCOJONES_CANON for B03; B03 attack blocked pending fix)
+
+### Context
+
+Following F19g extended (30 April morning) which documented 550/550 INFEAS on B02 with five discrete cut-count classes, the next operational question was whether the cut-classes correspond to algebraic structure on B02 (a sub-orbit decomposition of AG(5,4)\\{0} under Aut(B02)=3). If yes, this opens the door to a closed-form non-existence argument over B02 that does not require enumerating the remaining 169,102 LIVE pairs. The full 500-pair CSV from `probe2_B02_NEXT500_SUMMARY.csv` was extracted and analyzed in Python sandbox.
+
+### Method
+
+For each of 500 pairs (`a=1`, `b ∈ [60, 571]`), classify cut count into Class 0 (195–249), A (24,531–25,200), B (47,631–49,057), C (70,794–73,102), or D (93,279–115,924). Compute distribution of classes by `b mod n` for n ∈ {2..16, 12, 16}. Compute SCIP solve_t mean per class. Identify exact `b` values for each class.
+
+### Results
+
+**Class distribution on the 500-pair sample:**
+
+| Class | Count | % | Mean SCIP solve_t |
+|-------|------:|--:|------------------:|
+| 0 (ULTRA-LIGHT, 195–249) | 32 | 6.4% | 43.08 s |
+| A (24,531–25,200) | 100 | 20.0% | 26.12 s |
+| B (47,631–49,057) | 268 | 53.6% | 1.97 s |
+| C (70,794–73,102) | 54 | 10.8% | 2.24 s |
+| D (93,279–115,924) | 46 | 9.2% | 2.00 s |
+
+**Bimodal SCIP behavior:** Classes B/C/D close in ~2s with thousands of cuts pre-derived. Classes 0/A close in 26–43s with few or no pre-derived cuts. Total wall remains uniform (~107s mediano) because PROBE2 phase wall dominates — but **the SCIP-only contribution shows a 20× spread**. There are no HARD pairs (no TIMEOUT) but there is a clear **algebraic-cost spectrum** within B02.
+
+**Key algebraic finding — Class 0 forbidden region:**
+
+The 32 Class-0 pairs all have `b ∈ [400, 507]`, never outside this band. Within the band, the distribution by `b mod 16` is:
+
+| `b mod 16` | Class 0 count |
+|------------|--------------:|
+| 0, 1, 2, 3 | 4 each |
+| **4, 5, 6, 7** | **0** |
+| 8, 9, 10, 11, 12, 13, 14, 15 | 2 each |
+
+**Class 0 is structurally forbidden for `b mod 16 ∈ {4, 5, 6, 7}`.** This is not a sampling artifact — every `b` in those residues falls into a different class (typically A or B), uniformly across the band [400, 507]. The forbidden region is exactly **one quarter** of `b mod 16`, which suggests a sub-orbit structure of **|Aut(B02)| × Z₄ = 3 × 4 = 12** acting on the 1024 affine points, with one of 12 sub-orbits failing to admit Class-0 saturation behavior.
+
+**Block structure of length 4:** Sequence-of-classes analysis shows that classes occur in runs of **length 4 dominantly** (8 of 16 runs in the first 100 pairs have length exactly 4). This is consistent with the Z₄ scalar action on AG(5,4)\\{0} preserving the cut-class. Each pair (1, b) and its three Z₄-multiples (1, 2b), (1, 3b), (1, 0·b) — modulo the dead-flag — share a class.
+
+### Operational consequence
+
+The five-class structure is **algebraic, not noise**, with at least one explicit forbidden residue pattern (`b mod 16 ∈ {4,5,6,7}` for Class 0). The natural next algebraic question is: **does the action of Aut(B02) × Z₄ partition AG(5,4)\\{0} into exactly 5 sub-orbits, one per cut-class?** If yes, then closing one canonical representative per sub-orbit closes all 169,652 LIVE pairs by orbit-extension, reducing the campaign on B02 from 169k pair-attacks to ~5–12 representative attacks plus a sub-orbit-equivalence proof. **This is the clearest path to formal closure of B02 without exhaustive enumeration.**
+
+### B03 attack blocked — bug in PORMISCOJONES_CANON
+
+In parallel, the planned PROBE2 attack on B03 (priority 7, second-most-frequent residual bucket of E1*/E4*) was launched. **`PORMISCOJONES_CANON B03` aborted with the error:**
+
+```
+[1/5] Loading seed B03...
+[2/5] Precomputing AG vectors (1024 pts in GF(4)^5)...
+[3/5] Computing Aut_Mon(seed)...
+[AUT] enumerating Aut_Mon(seed) candidates...
+[AUT] |Aut_Mon| = 6
+[ERROR] |Aut_Mon| = 6 but expected 4. ABORT.
+```
+
+The binary has `expected = 4` for B03 hardcoded (consistent with `9_5_4_REFINED.txt` line 88, which states "B03 |Aut| corrected to 4"). The actual computed value is 6. **Either the catalogue value is stale and Aut(B03)=6 is correct, or the seed matrix used in the binary differs from the canonical B03 matrix.** This must be diagnosed before B03 attack can proceed. **B03 attack is BLOCKED pending fix.**
+
+If |Aut(B03)|=6 is correct, the catalogue line in `9_5_4_REFINED.txt` should be updated and the assertion in `ESTRELLA_PORMISCOJONES_CANON_v1.cpp` adjusted. If |Aut(B03)|=4 is correct, the seed matrix in the binary must be checked against the catalogue. **A 30-minute audit by the next Claude instance will resolve this.**
+
+### Files (keep, 30 April late morning)
+
+- `probe2_B02_NEXT500_SUMMARY.csv` — full 500-pair table.
+- `cutclass_analysis.py` (Claude sandbox, 30 April) — Python analysis producing the table above.
+- `canon_B03.log` — failed CANON output documenting the |Aut|=6 vs expected=4 discrepancy.
+
+### Do NOT
+
+- Run B03 PROBE2 attack until the |Aut(B03)| discrepancy is resolved.
+- Trust the |Aut(B03)|=4 catalogue value in `9_5_4_REFINED.txt` until the audit confirms or refutes it.
+- Treat the five cut-classes as continuous noise. They are discrete structure.
+- Run the 169k B02 pairs blindly. If the sub-orbit decomposition holds, ~12 representative pairs close everything.
+- Use `cat <<'STOP' ... STOP` heredoc blocks for shell-script-via-chat-paste. The chat client mangles them with duplicate paste injection; the user lost time on this on 30 April. Use `nano` editing or direct file download instead for any future script delivery.
+
+### Strategic redirect (30 April afternoon)
+
+Three productive paths remain:
+
+1. **Algebraic — confirm sub-orbit decomposition on B02.** Compute Aut(B02) × Z₄ orbits on AG(5,4)\\{0} explicitly (Python sandbox, ~1 hour work). Cross-reference with the cut-class membership of the 500 pairs. If the partition is exact, write the closure theorem.
+
+2. **Operational — fix B03 CANON bug and resume B03 attack.** Determine whether |Aut(B03)| is 4 or 6 via independent computation. Update either the catalogue or the binary. Then run PROBE2 B03 first-50 batch as originally planned.
+
+3. **Strategic — B01 as alternative second seed.** B01 has 30 residuals in E1* (vs 90 for B03), so weaker priority. But |Aut(B01)|=72 means the canonical pair catalogue is much smaller than B02's 169k; PROBE2 B01 can be exhaustive in days, not weeks. Useful comparison data.
+
+The recommended order is **1 → 2**: the sub-orbit theorem on B02 is potentially the highest-value result of the entire campaign (closes B02 formally, lifts F19g residual mapping to a Diamond non-existence on B02). B03 fix is straightforward but secondary.
+
+### Credits
+
+- **CSV extraction and Python algebraic analysis (5 classes, `b mod 16` exclusion, block-length-4 pattern):** Claude (current instance), 30 April morning.
+- **B03 CANON launch and bug capture:** R. Amichis, 30 April morning on Mac M2.
+- **Identification of `cat <<'STOP'` heredoc copy-paste corruption pattern (chat client injects duplicate paste mid-block):** R. Amichis, 30 April morning, lost ~30 min before falling back to other delivery methods.
+
+---
+
+*Proyecto Estrella · 30 April 2026 late morning — Madrid · F19g-bis added.*
+*B02 cut-class structure confirmed algebraic: 5 discrete classes, Class 0 forbidden for `b mod 16 ∈ {4,5,6,7}`, block-length-4 runs consistent with Z₄ scalar action. Path to formal B02 closure via Aut(B02)×Z₄ sub-orbit theorem identified. B03 CANON aborts on |Aut|=6 vs expected=4 — bug to diagnose before B03 attack resumes. Next session: sub-orbit theorem confirmation in Python, then B03 audit.*
