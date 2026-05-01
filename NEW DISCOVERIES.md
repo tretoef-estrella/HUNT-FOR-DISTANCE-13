@@ -2619,3 +2619,173 @@ The recommended order is **1 → 2**: the sub-orbit theorem on B02 is potentiall
 
 *Proyecto Estrella · 30 April 2026 late morning — Madrid · F19g-bis added.*
 *B02 cut-class structure confirmed algebraic: 5 discrete classes, Class 0 forbidden for `b mod 16 ∈ {4,5,6,7}`, block-length-4 runs consistent with Z₄ scalar action. Path to formal B02 closure via Aut(B02)×Z₄ sub-orbit theorem identified. B03 CANON aborts on |Aut|=6 vs expected=4 — bug to diagnose before B03 attack resumes. Next session: sub-orbit theorem confirmation in Python, then B03 audit.*
+-------------------------
+## Addendum — 30 April 2026 afternoon (F19g-ter: dual-Claude session refutes the Aut(B02)×Z₄ sub-orbit conjecture, derives the exact 5-condition algebraic rule for Class 0, identifies a universal min-size predictor, audits the B03 CANON bug, and queues a 22-pair cross-seed validation experiment)
+
+### Context
+
+F19g-bis (30 April morning) had hypothesized that the five B02 cut-classes correspond to sub-orbits of `Aut(B02) × Z₄` acting on AG(5,4)\\{0}, and proposed a Python sandbox to confirm. A second Claude instance was opened by Rafa to execute the sandbox; the previous Claude instance (this one) prepared the briefing and continued investigating in parallel. This addendum documents what the dual-Claude session produced.
+
+### Key results
+
+#### 1. The Aut(B02)×Z₄ sub-orbit conjecture is **refuted**
+
+Direct computation of `Aut_Mon(B02)` replicating the algorithm of `ESTRELLA_PORMISCOJONES_CANON_v1.cpp` (lines 172-211) on the B02 matrix yields:
+
+```
+|Aut_Mon(B02)| = 3
+The 3 elements are EXACTLY the scalar multiplications by GF(4)*:
+  diag(1,1,1,1,1), diag(2,2,2,2,2), diag(3,3,3,3,3)
+```
+
+There are **no non-scalar permutations of seed columns** in Aut(B02). The conjectured group `Aut(B02) × Z₄` collapses to `Z₃` (the scalar group is itself the Z₄-minus-identity factor). Orbits on AG(5,4)\\{0} are exactly the **341 projective lines of PG(4,4)**, all of size 3. **Class structure cannot come from Aut(B02).**
+
+**Consequence:** the operational plan from F19g-bis ("close B02 with ~12 representative pair attacks") is dead in this form. A different mechanism produces the 5 classes.
+
+#### 2. Exact algebraic rule for Class 0 derived (`rule_v4`)
+
+The other Claude derived a 5-condition rule on coordinate vectors:
+
+```
+b = (b[0], b[1], b[2], b[3], b[4])  in GF(4)^5
+
+Class 0 ⟺ b[4]=1 AND b[3]∈{2,3} AND (b[2]=1 OR b[2]=b[3]) AND MUL[b[3]][b[1]]∈{0,1}
+```
+
+**Independently verified by both Claude instances against the 500-pair CSV:**
+
+- **32 / 32** real Class-0 pairs satisfy `rule_v4` (recall: perfect).
+- **0 / 468** non-Class-0 pairs satisfy it (precision: perfect).
+
+Translating to integer arithmetic: `rule_v4` corresponds approximately to `b mod 16 ∈ {0,1,2,3,8..15}` within the band `b ∈ [400, 507]`, but the rule is more precise than the modular form — the modular form is a coincidence of how `[400, 507]` fits within GF(4)⁵.
+
+#### 3. Universal min-size predictor identified
+
+The other Claude observed that for each pair `(a, b)`, the vector `b - a` (= `b XOR a`, since GF(4)-addition is XOR componentwise) admits a "minimum expression size" — the smallest `k` such that `b - a = c_1·S[i_1] + ... + c_k·S[i_k]` with `c_j ≠ 0` and `S` the seed columns. Using the B02 seed:
+
+| Min-size | Count over 1024 vecs | In 32 Class-0 |
+|---------:|---------------------:|--------------:|
+| 0 | 1 | — |
+| 1 | 27 | 0 |
+| 2 | 324 | 0 |
+| 3 | 657 | **27** |
+| 4 | **15** | **5** |
+
+**All 32 Class-0 pairs have min-size ∈ {3, 4}.** Conversely, for `a=1` over all 1024 vectors, exactly **15** pairs `(1, b)` have min-size = 4. **5 of those 15 are in the CSV (all Class-0); 10 are untested.**
+
+The 10 untested all have `b[4] ∈ {2, 3}` (vs `b[4] = 1` for the 5 tested), so they form a **structurally distinct sub-population** of size-4 pairs and were initially proposed as the next validation target.
+
+#### 4. B03 |Aut| bug audit — closed
+
+Both Claude instances independently recomputed `|Aut_Mon(B03)|` on the B03 matrix from the binary (`P_B03 = [[1,2,1,2],[1,1,2,0],[1,1,0,3],[1,0,1,1],[0,1,1,1]]`). Both found:
+
+```
+|Aut_Mon(B03)| = 6  (NOT 4 as catalogue claims)
+Composition: 3 scalars + 3 non-scalar permutations
+Orbit structure on AG(5,4)\\{0}: 21 orbits of size 3 + 160 orbits of size 6 = 181 orbits total
+```
+
+**Conclusion:** the catalogue value `|Aut(B03)|=4` in `9_5_4_REFINED.txt` line 88 is **stale / wrong**. The correct value is 6. The CANON binary's assertion `expected=4` must be updated to `expected=6` for the B03 attack to proceed.
+
+**B03 has structurally non-trivial Aut**, unlike B02. This is a real opportunity (the conjecture that failed for B02 may hold for B03 in some form), but the same caveats apply: cut-classes likely emerge from coordinate-level patterns, not from Aut alone.
+
+#### 5. False-symmetry argument identified and rejected mid-session
+
+The second Claude initially proposed that the 10 untested size-4 pairs (with `b[4] ∈ {2,3}`) are Z₃-equivalent to the 5 tested (with `b[4]=1`) and therefore Class-0 by symmetry, avoiding 20 minutes of Mac compute. **This was retracted in the same message** upon noticing that within the fiber `a=1`, the Z₃ scalar action requires `λ=1` to preserve `a=1`, which means the action is trivial on the fiber: every pair `(1, b)` with distinct `b` is canonically inequivalent. **No symmetry shortcut exists.** The 10 untested pairs require empirical testing.
+
+This is documented as a "lesson learned" because: (a) the trap is plausible at first glance, (b) the second Claude caught it before the first could, (c) future Claude instances may run into the same trap and should know it has been examined.
+
+### The 22-pair cross-seed validation plan (queued, not yet executed)
+
+To distinguish "genuine Class-0 universal predictor" from "B02-with-`a=1`-specific lucky regularity", the second Claude proposed (and the first endorsed) a two-stage validation:
+
+**Stage 1 — Validate min-size predictor in B02 itself:**
+
+Run PORMISCOJONES_PROBE2 on the 10 untested size-4 pairs of B02 (all `a=1`, `b[4]∈{2,3}`):
+
+```
+b ∈ {594, 739, 743, 755, 756, 850, 859, 882, 890, 928}
+```
+
+Estimated wall: ~25 minutes on Mac M2 at 25% CPU. Expected outcome: if predictor is universal, all 10 should yield cuts ~195 (Class-0). If they fall in other classes, the predictor's domain is narrower than `min-size=4`, and the rule must be refined.
+
+**Stage 2 — Apply predictor to other clean seeds:**
+
+After B03 |Aut|=6 patch and CANON regeneration, attack the 12 predicted size-4 candidates of B03 + 18 of B01 + 9 of B06 + 15 of B10 = **42 pairs total** with PROBE2 single-pair, no batch overhead. Estimated wall: ~30-40 minutes total.
+
+**B03 candidates (predicted Class-0 by min-size = 4):**
+
+```
+b ∈ {421, 476, 500, 501, 601, 603, 615, 761, 861, 941, 942, 954}
+```
+
+If all 22 (Stage 1 + B03) close INFEAS, the predictor is empirically robust on two seeds and the universality claim becomes defensible. If any single pair returns FEAS or TIMEOUT, that pair is the candidate — verify with `ESTRELLA_DIAMOND_VERIFY_v1` immediately.
+
+### The honest landscape after Stage 2
+
+**Stated openly by the second Claude before any Mac compute** (worth quoting verbatim):
+
+> *"el predictor NO predice dónde está el Diamante — predice dónde el seed es algebraicamente más blando. Son cosas distintas. Si los 42 candidatos cruzados de B01/B03/B06/B10 también cierran INFEAS todos, la lectura honesta es que el Diamante o no existe o vive en FRAC."*
+
+The four exhaustive scenarios after Stage 2:
+
+(i) **All 22 close INFEAS** — predictor confirmed; "soft regions" of all clean seeds are Diamond-free. Two readings remain: Diamond in FRAC (B04/B05/B07, requires ENUM_v4) or Diamond does not exist.
+
+(ii) **Some pair FEAS** — verify with DIAMOND_VERIFY_v1, then re-verify by exhaustive d_min(C) enumeration. Either Diamond found or PROBE2 bug uncovered.
+
+(iii) **Some pair TIMEOUT** — first non-INFEAS-fast verdict on a clean seed. New structural class. Investigate.
+
+(iv) **B02 size-4 untested fall into mixed classes** — predictor over-generalizes. Refine the rule before extrapolating to B03/B01/B06/B10.
+
+The scenario-(i) decision is not technical but strategic and belongs to Rafa: build ENUM_v4 (~2-3 days work to open FRAC) or write the negative-result paper.
+
+### Operational lessons added 30 April afternoon
+
+70. **`Aut_Mon` is a 5×5 matrix group acting on the row space, NOT a permutation group on columns.** When the action is "scalar multiplication only" (as in B02), Aut is trivial in any sense relevant to non-trivial sub-orbit decomposition of the AG points. Always inspect Aut elements explicitly (scalar vs non-scalar) before conjecturing sub-orbit theorems.
+
+71. **The fiber `{(a, b) : a fixed}` of a 2-pair attack is not stable under scalar multiplication unless `λ = 1`.** Therefore the Aut(seed) action restricted to a fixed-`a` fiber is the trivial subgroup. Any "symmetry shortcut" claim within a fiber is suspect by default.
+
+72. **GF(4) addition is bitwise XOR componentwise on the 2-bit representations.** This makes "b - a" in GF(4)⁵ identical to `b XOR a` as integers in `[0, 1023]`. Useful for fast computation; misleading if the reader confuses it with mod-2 arithmetic on the integer encoding.
+
+73. **`min-size` as a predictor of cut-class is NOT a tight predictor.** Histograms show: Class D dominantly size=2, Class A dominantly size=3, Class 0 only at sizes 3 and 4, classes B/C mixed 2/3. The 32 Class-0 pairs all have min-size ∈ {3, 4}, but the converse (min-size=3 → Class-0) is FALSE — only 27 of 657 size=3 pairs are Class 0. The predictor is "necessary but loose".
+
+74. **Cross-Claude verification is a real defense against single-instance overconfidence.** Both Claude instances independently produced (a) the |Aut(B03)|=6 result, (b) the 32/32 verification of `rule_v4`. Both also examined and rejected the false-symmetry shortcut on the `a=1` fiber. Independent checking caught the matters of fact and the matters of reasoning.
+
+### Files (keep, 30 April afternoon)
+
+- `compute_aut_b02.py` — sandbox computing Aut(B02), verifies orbit structure 341×3 = 1023.
+- `compute_aut_b03.py` — sandbox computing Aut(B03), verifies |Aut|=6 and 21+160=181 orbits.
+- `verify_b02_rule.py` — first-Claude cross-check of rule_v4: 32/32 pass, 0/468 false positives.
+- `verify_min_size.py` — first-Claude verification of min-size claims: 15 size-4 pairs in B02, distribution exact.
+- `BRIEFING_para_otro_claude.md` — full handoff document used to launch the second Claude session.
+- `B03_audit_result.md` — the |Aut(B03)|=6 audit result with patch instructions.
+
+### Do NOT (added 30 April afternoon)
+
+- Re-attempt the "Aut(B02)×Z₄ sub-orbit decomposition" conjecture. Aut(B02) is scalar, the conjecture is dead.
+- Apply Z₃ symmetry within an `a=1` fiber. The action restricts to identity.
+- Use min-size as a tight predictor (it is loose: only 27/657 size-3 pairs are Class-0).
+- Attack B03 before the |Aut|=6 patch is applied to both `9_5_4_REFINED.txt` and the CANON binary.
+- Run any of the 22 cross-seed validation pairs without verifying that a FEAS verdict triggers a manual DIAMOND_VERIFY_v1 check (the script must include this gate).
+
+### Strategic state at end of 30 April afternoon
+
+The 22-pair validation experiment is **queued**. The next Claude in the project should expect to receive logs from Rafa within ~1-2 hours of session start (Stage 1 + Stage 2 combined). Decision tree (i)-(iv) above governs what comes after.
+
+If scenario (i) is realized — all 22 INFEAS — the discussion that has been deferred since F19g morning becomes unavoidable: ENUM_v4 build (2-3 days) for FRAC seeds, or negative-result paper. Both Claudes have agreed not to push Rafa toward either choice. **The decision is his.**
+
+### Credits
+
+- **Refutation of Aut(B02)×Z₄ conjecture (computed Aut explicitly):** Claude (first instance, prior chat), 30 April afternoon, BRIEFING_para_otro_claude.md.
+- **Derivation of `rule_v4` (5 algebraic conditions):** Claude (second instance, current chat), 30 April afternoon.
+- **Independent verification of rule_v4 (32/32 + 0 FP):** Claude (first instance), 30 April afternoon, `verify_b02_rule.py`.
+- **Universal min-size predictor proposal:** Claude (second instance).
+- **Independent verification of min-size numbers (15 totals, 5 in CSV, 10 untested):** Claude (first instance), `verify_min_size.py`.
+- **|Aut(B03)|=6 audit, two independent computations:** both Claude instances, 30 April afternoon.
+- **Catch and retraction of false Z₃-symmetry argument on `a=1` fiber:** Claude (second instance), self-corrected mid-message.
+- **22-pair cross-seed validation plan:** joint, second Claude proposed, first Claude endorsed with operational additions (per-pair log files, FEAS/TIMEOUT alarm, post-batch summary harvest).
+
+---
+
+*Proyecto Estrella · 30 April 2026 afternoon — Madrid · F19g-ter added.*
+*Aut(B02)×Z₄ sub-orbit conjecture refuted; Aut(B02) is scalar Z₃, orbits are 341 projective lines. Exact 5-condition algebraic rule for Class 0 derived (`rule_v4`), perfect on 32/32 + 0/468 false positives. Universal min-size predictor proposed and partially validated (loose, not tight). |Aut(B03)|=6 confirmed by two independent audits, catalogue is stale. 22-pair cross-seed validation queued. Honest scenario tree (i-iv) for post-validation decisions documented. The Diamond either lives in FRAC, in a "non-soft" region of clean seeds, or does not exist; cross-seed validation will narrow the choice.*
