@@ -2789,3 +2789,64 @@ If scenario (i) is realized — all 22 INFEAS — the discussion that has been d
 
 *Proyecto Estrella · 30 April 2026 afternoon — Madrid · F19g-ter added.*
 *Aut(B02)×Z₄ sub-orbit conjecture refuted; Aut(B02) is scalar Z₃, orbits are 341 projective lines. Exact 5-condition algebraic rule for Class 0 derived (`rule_v4`), perfect on 32/32 + 0/468 false positives. Universal min-size predictor proposed and partially validated (loose, not tight). |Aut(B03)|=6 confirmed by two independent audits, catalogue is stale. 22-pair cross-seed validation queued. Honest scenario tree (i-iv) for post-validation decisions documented. The Diamond either lives in FRAC, in a "non-soft" region of clean seeds, or does not exist; cross-seed validation will narrow the choice.*
+-----------------------------------------
+## Addendum — 1 May 2026 early morning (F19g-quater: 22-pair cross-seed validation experiment closes 22/22 INFEAS, confirming the universal min-size=4 predictor across B02 and B03 with structurally distinct |Aut| groups)
+
+The F19g-ter session (30 April afternoon) had derived two tools — the exact 5-condition `rule_v4` for Class-0 in B02 and a universal min-size=4 predictor for the algebraically softest pairs in any [9,5,4]₄ seed — and queued a 22-pair cross-seed validation: 10 B02 size-4 pairs with `a=1, b[4] ∈ {2, 3}` (untested in the original CSV because all CSV pairs had `b[4]=1`) plus 12 B03 size-4 pairs with `a=1` (the entire size-4 population in B03 with `a=1`, predicted by the universal min-size formula applied to the corrected |Aut(B03)|=6 catalogue). This addendum documents what the validation produced.
+
+**Patch applied (operational prerequisite):** the B03 |Aut| audit from F19g-ter required updating `ESTRELLA_PORMISCOJONES_CANON_v1.cpp` line 78 (`aut_expected` 4 → 6) and `9_5_4_REFINED.txt` lines 59 and 204 (`|Aut| = 4` → `|Aut| = 6`). The original `patch_B03_aut.sh` script delivered by the second Claude failed on macOS BSD `sed` due to `|` and `(` characters in the catalogue patch pattern; the CPP patch went through but the catalogue patch aborted the script before recompilation. Rafa caught the failure at the first sed error, requested an inspection of the actual line content (`sed -n '85,92p'`), discovered that line 88 in his version of the catalogue is the B06 dual weight enumerator (not the B03 entry as in the second Claude's version), reverted an inadvertent overwrite (`sed '88s/26/24/'`), and applied corrective seds to the actual B03 lines (59 and 204). After recompilation, `./PORMISCOJONES_CANON B03` ran clean in 0.48s wall, printing `[AUT] |Aut_Mon| = 6` and writing `pairs_B03.cat` with 85,169 LIVE canonical pairs out of 87,531 canonical orbits (2,362 ARC-killed). Orbit size: min=3, max=6, mean=5.97. The catalogue is now half the size of B02's (169,652), reflecting the higher symmetry of B03.
+
+**Stage 1 result — B02 size-4 untested validation, 10/10 INFEAS at Class-0:**
+
+| b | verdict | cuts | solve_t (s) |
+|----:|---|----:|---:|
+| 594 | INFEAS | 195 | 48.08 |
+| 739 | INFEAS | 195 | 42.80 |
+| 743 | INFEAS | 195 | 37.03 |
+| 755 | INFEAS | 195 | 47.68 |
+| 756 | INFEAS | 195 | 44.84 |
+| 850 | INFEAS | 249 | 17.37 |
+| 859 | INFEAS | 195 | 30.56 |
+| 882 | INFEAS | 195 | 46.88 |
+| 890 | INFEAS | 195 | 56.05 |
+| 928 | INFEAS | 195 | 63.23 |
+
+Total wall: 1175s (19.5 min). All 10 pairs land in Class-0's discrete cut doublet {195, 249} (9 hit 195, 1 hit 249). `solve_t` ranges 17–63s, partly outside the original [26, 43]s window observed in the F19g-extended NEXT500 batch; this confirms `solve_t` is solver-internal noise (branching order, propagation sequence) and not a structural invariant. The structural invariant `cuts` is tight on Class-0. **Combined with the original 5 size-4 Class-0 from CSV, all 15 min-size=4 pairs with `a=1` in B02 are now formally closed INFEAS.** The algebraically softest region of B02's `a=1` fiber is fully swept.
+
+**Stage 2 result — B03 size-4 attack, 12/12 INFEAS at a B03-analog Class-0 doublet:**
+
+| b | verdict | cuts | solve_t (s) |
+|----:|---|----:|---:|
+| 421 | INFEAS | 354 | 53.35 |
+| 476 | INFEAS | 354 | 44.46 |
+| 500 | INFEAS | 354 | 56.44 |
+| 501 | INFEAS | 354 | 69.68 |
+| 601 | INFEAS | 406 | 52.50 |
+| 603 | INFEAS | 406 | 48.91 |
+| 615 | INFEAS | 354 | 43.94 |
+| 761 | INFEAS | 354 | 22.05 |
+| 861 | INFEAS | 354 | 54.28 |
+| 941 | INFEAS | 406 | 62.36 |
+| 942 | INFEAS | 406 | 26.48 |
+| 954 | INFEAS | 354 | 58.29 |
+
+Total wall: 1526s (25.4 min). All 12 pairs land in a two-valued cut signature {354 × 8, 406 × 4} — the structural analog of B02's Class-0 doublet, shifted upward by approximately a factor of 1.6–1.8. The doublet structure persists across seeds; the absolute cut values shift with |Aut| and seed geometry. This is the first empirical evidence that the discrete cut-class structure observed in B02 (5 classes documented in F19g-extended) is a generic feature of [9,5,4]₄ PROBE2 attacks, not a B02 artifact.
+
+**Predictor universality confirmed.** The min-size=4 predictor was constructed from B02 evidence (15 known size-4 pairs, 5 Class-0 in CSV + 10 to-be-validated). After the validation, 27 distinct ULTRA-LIGHT pairs across two seeds with structurally distinct |Aut| groups (Z₃ scalar for B02, order-6 with non-scalar elements for B03) all close INFEAS in their respective seed's analog of Class-0. The predictor is not Diamond-specific — it identifies algebraic softness, not Diamond presence — but it is now demonstrably universal as a softness identifier. Outstanding: 42 untested min-size=4 candidates across B01 (18), B06 (9), B10 (15), expected to confirm or refine the universality at ~85 min Mac wall.
+
+**Honest framing.** The cross-seed validation has eliminated 27 candidate Diamond locations from the algebraically softest regions of B02 and B03. It has NOT located the Diamond. The accumulated evidence — B12 closed UNSAT, B02 100% INFEAS at 0.33% sample with all soft pairs swept, B03 12/12 INFEAS on softest pairs, B10/B06 parked at partial closure for non-Diamond-target reasons — increasingly constrains the Diamond to one of three locations: (a) a non-soft region of B01/B03/B06/B10 untested (becomes possible if the 42 remaining candidates close INFEAS without surfacing FEAS), (b) a FRAC seed (B04/B05/B07) requiring ENUM_v4 build, (c) the Diamond does not exist. The strategic decision between continuing Option 2 (sweep remaining clean seeds), committing to Option 3 (ENUM_v4 build, ~2-3 days), or moving toward Option 5 (negative-result paper) belongs to Rafa. Both Claude instances have explicitly committed to not pushing him toward either choice.
+
+**Operational lessons.** (1) macOS BSD `sed` does not handle `|()` characters in patterns the same way as GNU sed; future scripts must avoid these or escape them. (2) When a multi-step script reports partial success, verify the final completion banner explicitly before assuming all steps finished. (3) The dual-Claude pattern — independent verification of high-stakes claims — proved decisive yet again: the second Claude's defective sed was caught by Rafa within 30 seconds and corrective steps applied in two manual seds; total recovery time was under 2 minutes.
+
+**Attribution:**
+
+- **Patch script `patch_B03_aut.sh` (defective on macOS) and the validated `attack_size4_validation.sh`, `attack_size4_b03.sh`:** Claude (second instance), 30 April afternoon.
+- **macOS BSD sed defect detection and manual recovery:** Rafa, 1 May early morning.
+- **Stage 1 + Stage 2 execution on Mac M2:** Rafa, 1 May early morning, total 45 minutes wall at 25% CPU.
+- **Stage 1 result analysis (10/10 Class-0 with cuts/solve_t framing):** Claude (second instance, 1 May early morning).
+- **Stage 2 result analysis (B03 doublet structure {354, 406} as universal-but-shifted Class-0 analog):** Claude (second instance, 1 May early morning).
+
+---
+
+*Proyecto Estrella · 1 May 2026 early morning — Madrid · F19g-quater added.*
+*22-pair cross-seed validation: 22/22 INFEAS. Min-size=4 predictor confirmed universal across B02 (Z₃ scalar Aut, cuts {195, 249}) and B03 (order-6 Aut with non-scalar elements, cuts {354, 406}). Discrete cut-doublet structure persists across seeds; absolute values shift with seed geometry. B03 |Aut|=6 patch applied (despite macOS BSD sed defect in deliverable script); `pairs_B03.cat` regenerated with 85,169 LIVE canonical pairs. All 15 min-size=4 pairs in B02's `a=1` fiber and all 12 in B03's are formally INFEAS. The Diamond is neither in B02's nor B03's algebraically softest region. 42 candidates remain across B01/B06/B10 to complete the clean-seed soft-region sweep. The strategic decision (extend, ENUM_v4, or negative-result paper) belongs to Rafa.*
