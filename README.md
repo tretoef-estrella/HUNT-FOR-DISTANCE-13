@@ -23,7 +23,7 @@ This is SEED_E1★. Six rows, twenty-two columns, four symbols. Found on 24 Marc
 
 Out of the 1,365 hyperplanes of the projective space PG(5,4), exactly **one** contains too many of these 22 points. One hyperplane at load 10 instead of 9. One violation. Remove it, and you have the Diamond — a perfect code that the algebra says should exist but the geometry refuses to produce.
 
-441 engines and 2.5 billion evaluations later, this is still the world record. Nobody has come closer.
+441 engines and 2.5 billion evaluations later, this is still the closest to 22 6 13, as far as I know.
 
 ---
 
