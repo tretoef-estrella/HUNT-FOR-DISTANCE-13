@@ -10,7 +10,7 @@ He didn't find it. But what he found instead — and what he proved along the wa
 
 ## The Matrix
 
-This is SEED_E1★. Six rows, twenty-two columns, four symbols. Found on 24 March 2026 by engine ESTRELLA RAYO v3. It is the closest anyone has ever published (as far as I know) to a [22,6,13]₄ code — a mathematical object that may or may not exist, and that nobody had seriously hunted in 25 years.
+This is SEED_E1★. Six rows, twenty-two columns, four symbols. Found on 24 March 2026 by engine ESTRELLA RAYO v3. It is a [22,6,12]₄ code with A₁₂ = 3 — the closest anyone has ever published (as far as I know) to a [22,6,13]₄ code, a mathematical object that may or may not exist and that nobody had seriously hunted in 25 years.
 
 ```
 1 1 0 1 1 0 0 1 0 0 0 1 1 0 1 1 0 1 1 1 0 1
@@ -43,7 +43,7 @@ The academic world had moved on. The entry sat there, unchanged, for a quarter c
 
 In early 2026, he taught himself GF(4) arithmetic from scratch — the finite field with four elements, where addition is XOR and multiplication follows tables he memorized like vocabulary flashcards. He learned what a projective space is, what a hyperplane does, what the MacWilliams identities say about weight distributions. He learned it the way a builder learns physics: not from textbooks, but because the wall he was trying to break required it.
 
-Working alone from a small town west of Madrid, with a MacBook Air M2 and no funding, no university, no PhD advisor, no computing cluster — he coordinated four AI systems as co-creators and auditors, designed every search strategy from intuition and metaphor, diagnosed every failure, and directed every pivot.
+Working alone from Villanueva del Pardillo, a small town west of Madrid, with a MacBook Air M2 and no funding, no university, no PhD advisor, no computing cluster — he coordinated four AI systems as co-creators and auditors, designed every search strategy from intuition and metaphor, diagnosed every failure, and directed every pivot.
 
 In approximately eight weeks, working 18-hour days, he built **441+ complete C++ search engines** — each one a full rewrite, not a patch — and executed **2.5 billion matrix evaluations**. He drove the excess from 42 down to 1.
 
