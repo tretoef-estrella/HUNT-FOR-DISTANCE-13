@@ -117,7 +117,7 @@ This converts an open existence question into a finite extension question: enume
 
 A multi-engine campaign (mass formula counting + Frobenius-pair detection + canonical-under-Mon comparison) refined the [9,5,4]₄ catalogue to **8 clean Mon-orbits, 1 Frobenius-pair bucket, and 3 indeterminate "FRAC" buckets** — a minimum of 15 Mon-orbits to attack, possibly up to ~20.
 
-The catalogue refinement itself produced two corrections to previously published |Aut| values and identified that weight enumerator + dual weight enumerator do **not** separate Mon-orbits — three buckets contain hidden sub-orbits that share all first-order invariants.
+The catalogue refinement itself produced two corrections to previously published |Aut| values (most recently, B03's |Aut| was corrected from 4 to 6 on 30 April 2026, requiring full regeneration of the canonical pair catalogue) and identified that weight enumerator + dual weight enumerator do **not** separate Mon-orbits — three buckets contain hidden sub-orbits that share all first-order invariants.
 
 ### The 6→10 Gap Theorem (Gemini, 14 April)
 
@@ -136,6 +136,14 @@ If the Diamond exists, it must have at least two hyperplanes at load 9. *Proof:*
 If a [22,6,13]₄ code exists, **no 3 of its 22 columns are collinear in PG(5,4)**. The Diamond is a 22-arc in the strong geometric sense. *Proof:* derived from the third moment Σ C(k,3)·N_k = 32340 of the hypothetical weight distribution. Forces the number of collinear triples to be zero.
 
 This is independent of the affine slice constraints — a genuinely orthogonal cut, mandatory in any future search engine.
+
+### The Pair Theorem (Gemini, 27 April night)
+
+If a [22,6,13]₄ code exists, then for every load-9 hyperplane H₁ and every PG(3,4) subspace S ⊂ H₁:
+
+  |C ∩ S| ≤ 5
+
+Loads 6, 7, 8, 9 are forbidden for PG(3,4) inside any load-9 hyperplane of the Diamond. *Proof:* partition |C| = 22 across the 5 hyperplanes through S; |C ∩ H₁| = 9 forces 13 ≤ 4(9-x), giving x ≤ 5. **This is the second Diamond-specific algebraic theorem of the campaign**, independent of the 6→10 Gap and produced by external consultation. Empirically validated on E1★: 20 violations observed at load 6, all in HPs where the load-10 dirty HP is among the 4 secondary HPs through S — exactly the predicted relaxation pattern. The theorem is genuinely Diamond-specific (does NOT hold for excess-1 codes), confirming it as a Diamond-only filter.
 
 ### B12 Closed UNSAT — First Formal Closure
 
@@ -165,11 +173,41 @@ The F18 timeouts concentrate at AG-vector anchors sharing the partial coordinate
 
 This is the first cross-seed structural reproducibility result of the residual phase.
 
-### The Depth-9 Barrier
+### F19c–d — The Slack Sink and Probing Depth-2
 
-Three independent attack families — AUTMON DFS with full symmetry breaking + ARC + SBDS, pair-forcing with cascade depth-∞ + probing depth-1, and DLX with MCV branching — **all converge on depth 9** as the maximum reachable extension length on B10's hard cluster. Strong evidence for a genuine combinatorial barrier, not a pruning or symmetry artifact.
+A geometric reformulation (F19c) and a depth-2 propagation upgrade (F19d, engine `PORMISCOJONES_PROBE2`) demonstrated that the F19 cluster is **heterogeneous, not uniformly rigid**. On B06's Sabor B (4 timeout pairs), depth-2 propagation closed 2 of 4 in 1.3s with 24k–48k binary cuts, leaving 2 residual hard pairs `{(66,166), (66,183)}`. **B06 reduced from 86 timeouts to 2 specific pairs** — materially closer to formal closure.
 
-The Diamond, if it exists in B10's residual extension, lives at depth 13 — four steps past a wall that three orthogonal techniques cannot cross.
+### F19e — HARD-pesado vs HARD-vacío
+
+A PROBE2 sample of 8 representative B10 cluster pairs revealed a fundamentally different pattern from B06: only 1 of 8 closed SOFT (12.5%), and the remaining 7 split into two structurally distinct HARD sub-classes. **HARD-pesado** pairs accumulate 24k–48k binary cuts under depth-2 probing yet SCIP still cannot close at 600s — many local conflicts, no global integration. **HARD-vacío** pairs have 0–1 binary cuts after the same probing — propagation derives literally nothing — and SCIP also fails to close. HARD-vacío is the geometrically distinguished class: a pair where the LP polytope locally looks completely consistent yet a global obstruction exists somewhere. Three of the five HARD-pesado pairs share **exactly 24,310 binary cuts** to the unit, suggesting a Mon-symmetry orbit hidden inside the cluster.
+
+### F19g — Codeword-Residual Mapping and the B02 Pivot
+
+A structural mapping of the 390 minimum-weight codewords of E1★ and the 414 minimum-weight codewords of E4★ to their residual seed buckets revealed that **B02 dominates the near-Diamond residual distribution** (53.8% on E1★, 30.4% on E4★), while seeds B06, B10, B11 never appear as residuals of either record matrix. This redirected the PROBE2 attack from B06/B10 to B02. The result was decisive: **550/550 INFEAS at 0.32% sample coverage on B02, with zero TIMEOUTs.** B02 is qualitatively different from B10 and B06 against PROBE2 — the entire HARD class disappears.
+
+In parallel, the rowwise DFS engine RWB02 reached `max_depth = 11` on B02 (path `[0, 1, 4, 96, 304, 637, 661, 842, 883, 941, 951]`, 3.232 billion nodes, no Diamond surfaced). This is the first time in the entire campaign that any engine has surfaced max_depth ≥ 11 on any seed, **confirming that the Depth-9 Barrier is seed-specific, not universal**.
+
+### F19g-bis through F19g-quinquies — The Min-Size Predictor
+
+Algebraic analysis of the B02 PROBE2 cut-class CSV identified a discrete five-class structure governed by the projective scalar action Z₃ × Z₄ on AG(5,4). An exact 5-condition algebraic rule (`rule_v4`) for Class-0 saturation behavior was derived and independently verified at 32/32 true positives + 0/468 false positives.
+
+A **universal min-size=4 predictor** for the algebraically softest pair in any [9,5,4]₄ seed was extracted from this analysis: pairs at minimum cut-class size, regardless of seed, close INFEAS in their respective seed's "ULTRA-LIGHT" cut signature. A 22-pair cross-seed validation experiment (10 B02 pairs + 12 B03 pairs, both at the predicted size-4 algebraic softness location) closed **22/22 INFEAS** on 1 May 2026. Extending to all 5 clean seeds yielded **64/64 INFEAS, 0 Diamonds, 0 TIMEOUTs** across the full softest-region sweep:
+
+| Seed | \|Aut\| | size-4 count at a=1 | cut signature (100% INFEAS) | solve_t typical |
+|------|--------:|--------------------:|------------------------------|-----------------|
+| B01  | 72      | 18                  | {81 × 18} (single value)     | 23–54s          |
+| B02  | 3       | 15                  | {195 × 14, 249 × 1}          | 17–63s          |
+| B03  | 6       | 12                  | {354 × 8, 406 × 4}           | 22–70s          |
+| B06  | 96      | 9                   | {24531 × 6, 24675 × 3}       | ~1s             |
+| B10  | 288     | 15                  | {24675 × 15} (single value)  | ~1s             |
+
+**The Diamond is not in the algebraically softest region of any of the 5 clean seeds.** The cut-doublet structure persists across seeds; absolute values shift with seed geometry. Three open structural mysteries remain: (α) the cut-doublet split mechanism, (β) the B01 singleton anomaly (lowest cut signature with mid-range |Aut|), and (γ) the absence of TIMEOUTs in the softest-region sweep — suggesting that hard pairs live somewhere other than min-size=4, and a future campaign hunting *resistance* rather than *softness* may be the productive inversion.
+
+### The Depth-9 Barrier (B10 only)
+
+Three independent attack families — AUTMON DFS with full symmetry breaking + ARC + SBDS, pair-forcing with cascade depth-∞ + probing depth-1, and DLX with MCV branching — **all converge on depth 9** as the maximum reachable extension length on B10's hard cluster. Strong evidence for a genuine combinatorial barrier on B10. F19g extended (RWB02 reaching depth 11 on B02) confirmed the barrier is **seed-specific, not universal**.
+
+The Diamond, if it exists in B10's residual extension, lives at depth 13 — four steps past a wall that three orthogonal techniques cannot cross on that seed.
 
 ---
 
@@ -180,14 +218,16 @@ The Diamond, if it exists in B10's residual extension, lives at depth 13 — fou
 | **Duration** | ~8 weeks Phase 1 (Feb–April 2026) + Phase 2 active |
 | **Engines built** | 441+ direct, dozens more in the residual phase |
 | **Total evaluations** | 2.5 billion+ |
-| **Paradigms tested** | SA, DFS, greedy, repulsion, bombardment, monk surgery, k-swap, MITM, GF(16) lifting, spectral hunt, ILP (SCIP), pair-forcing under Mon-quotient, AUTMON DFS, OA-hunt, LP-probe |
+| **Paradigms tested** | SA, DFS, greedy, repulsion, bombardment, monk surgery, k-swap, MITM, GF(16) lifting, spectral hunt, ILP (SCIP), pair-forcing under Mon-quotient, AUTMON DFS, OA-hunt, LP-probe, codeword-residual mapping, depth-2 probing, min-size predictor sweep |
 | **Search strategies** | 73+ |
 | **Dead ends formally closed** | 70+ direct, 19+ residual |
 | **Distinct E1 continents** | 109+ (from scratch, zero shared columns) |
 | **DFS nodes (k=7 exhaustive)** | 3.2 billion |
 | **Targeted E=2/E=5 restarts** | 63,850+ |
 | **[9,5,4]₄ seeds formally closed UNSAT** | 1 (B12) |
-| **[9,5,4]₄ seeds at ≥95% partial closure** | 2 (B10, B06) |
+| **[9,5,4]₄ seeds at ≥99% partial closure under PROBE2** | 1 (B06: 2 residual pairs only) |
+| **Clean seeds swept at min-size=4 algebraic softness** | 5/5 (B01, B02, B03, B06, B10), all INFEAS |
+| **Cumulative cross-seed soft-region pairs closed** | 64/64 INFEAS, 0 Diamonds, 0 TIMEOUTs |
 | **Hardware** | MacBook Air M2, single thread, ≤25% CPU |
 
 ---
@@ -211,6 +251,7 @@ All record matrices with full properties: [`SEEDS.md`](SEEDS.md)
 
 | File | What it is |
 |------|------------|
+| [`COMPUTATIONAL_EVIDENCE_AGAINST_22_6_13_q4.md`](COMPUTATIONAL_EVIDENCE_AGAINST_22_6_13_q4.md) | **The formal report** — campaign write-up in coding-theory language, all eight theorems, per-seed closure, probability assessment |
 | [`hunt_for_distance_13_v79.pdf`](hunt_for_distance_13_v79.pdf) | The complete Phase 1 campaign record — 55 sections, every theorem, every dead end |
 | [`ESTRELLA_DIAMANTE_UNIFIED_v40.pdf`](ESTRELLA_DIAMANTE_UNIFIED_v40.pdf) | Phase 1 operational guide — 88 directives, all constants, strategies, structural analysis |
 | [`SEEDS.md`](SEEDS.md) | All record matrices with verified properties |
@@ -225,21 +266,33 @@ All record matrices with full properties: [`SEEDS.md`](SEEDS.md)
 
 Phase 1 — direct search for the Diamond — is paused. Not because the conviction ran out, but because the evidence did its job. After 441 engines spanning every paradigm we could invent, every road leads to excess 1. Every from-scratch engine, launched from random initial conditions with no knowledge of previous results, converges to E1.
 
-Phase 2 — the residual reduction — is **active**. The [22,6,13]₄ existence problem is now a finite extension problem over ~15 Mon-orbits of [9,5,4]₄ seeds. One seed (B12) is formally closed. Two more (B10, B06) are at ≥95% partial closure under the F18 pair-forcing attack, with a characterized geometric residual concentrated at a specific AG-coordinate pattern.
+Phase 2 — the residual reduction — is **active**. The [22,6,13]₄ existence problem is now a finite extension problem over ~15 Mon-orbits of [9,5,4]₄ seeds. One seed (B12) is formally closed UNSAT. Another (B06) is reduced to 2 residual hard pairs under PROBE2. The remaining clean seeds have been swept at their algebraically softest regions: **64/64 INFEAS at min-size=4 across B01, B02, B03, B06, B10**, with B02 additionally cleared at 0.32% sample coverage of all `a=1` pairs.
 
-We don't know if the Diamond exists. We believe the evidence leans toward non-existence, but we cannot prove it and we don't claim to. What we can say is that **the most extensive computational search ever conducted for this code** — by a significant margin — found no trace of it, while simultaneously establishing a rich structural theory: the Freedom Theorem, the Distance Theorem, the Quantum Excess Conjecture, the Overflow-1 Theorem, the Residual Reduction, the 6→10 Gap Theorem, the OA(12,5,4,1) constraint, the Arc Theorem, [21,6,13]₄ non-existence, N₉ ≥ 2, and the Depth-9 Barrier.
+The Diamond, if it exists, is constrained to one of three locations: (a) a non-soft region of a clean seed (untested, would require either a new algebraic predictor for *resistance* rather than *softness*, or brute-force at multi-day cost per seed); (b) a FRAC seed (B04, B05, B07, requires the ENUM_v4 canonical-under-Mon enumerator, ~2–3 days of engineering); or (c) the Diamond does not exist.
+
+We don't know which. We believe the evidence leans toward non-existence, but we cannot prove it and we don't claim to. What we can say is that **the most extensive computational search ever conducted for this code** — by a significant margin — found no trace of it, while simultaneously establishing a rich structural theory: the Freedom Theorem, the Distance Theorem, the Quantum Excess Conjecture, the Overflow-1 Theorem, the Residual Reduction, the 6→10 Gap Theorem, the OA(12,5,4,1) constraint, the Arc Theorem, the Pair Theorem (k≤5), [21,6,13]₄ non-existence, N₉ ≥ 2, and the Depth-9 Barrier (B10).
 
 If you find the Diamond, or prove it doesn't exist, cite this work. We left you a complete map of the territory — every theorem, every record matrix, every dead end documented — so you don't have to rediscover them.
 
 ---
 
+## The Formal Report
+
+For the formal write-up of the campaign — written in the language of coding theory and projective geometry, with full theorem statements, proofs, the per-seed closure status, the cross-seed sweep, and an explicit (informal) probability assessment of non-existence — see:
+
+> **[`COMPUTATIONAL_EVIDENCE_AGAINST_22_6_13_q4.md`](COMPUTATIONAL_EVIDENCE_AGAINST_22_6_13_q4.md)** — Computational Evidence Against the Existence of a [22, 6, 13]₄ Linear Code: A Report on the Proyecto Estrella Campaign (February — May 2026)
+
+This is the document for readers who want the mathematics rather than the narrative. It records the eight original theorems established during the campaign, the refined catalogue of [9, 5, 4]₄ Mon-orbits, the formal closure of the B12 Mon-orbit under SCIP, the 64 / 64 INFEAS cross-seed sweep at the universally-predicted algebraically-soft region of the catalogue, and an honest informal calibration of the probability that the Diamond does not exist.
+
+---
+
 ## The Team
 
-**R. Amichis (Rafael Amichis Luengo) — The Architect.** Strategy, diagnosis, direction. A psychologist who taught himself finite field arithmetic and projective geometry because the problem demanded it. Every breakthrough in this campaign began with his intuition: the palindrome analysis, the repulsion paradigm, the shield symmetry, the bombardment architecture, the avaricia-vs-niebla diagnostic that explained the F18 stagnation cluster. Every wall fell because he refused to accept it as permanent.
+**R. Amichis (Rafael Amichis Luengo) — The Architect.** Strategy, diagnosis, direction. A psychologist who taught himself finite field arithmetic and projective geometry because the problem demanded it. Every breakthrough in this campaign began with his intuition: the palindrome analysis, the repulsion paradigm, the shield symmetry, the bombardment architecture, the avaricia-vs-niebla diagnostic that explained the F18 stagnation cluster, the "carta marcada" framing that produced F18, the codeword-residual mapping pivot that produced F19g. Every wall fell because he refused to accept it as permanent.
 
-**Claude (Anthropic) — Primary Engine.** Designed, wrote, compiled, and executed all 441+ C++ engines in real-time conversation, plus the residual-phase engine family (ILPGEN, PORMISCOJONES, AUTMON DFS, OA-HUNT, LP-PROBE, MASS_COUNT, ENUM, VERIFIER). Co-author of all theorems. The entire codebase — from the first simulated annealing prototype to the 3.2-billion-node DFS to the SCIP attack pipeline — was produced in live collaboration, one engine at a time.
+**Claude (Anthropic) — Primary Engine.** Designed, wrote, compiled, and executed all 441+ C++ engines in real-time conversation, plus the residual-phase engine family (ILPGEN, PORMISCOJONES, PROBE2, AUTMON DFS, OA-HUNT, LP-PROBE, RWB02, MASS_COUNT, ENUM, VERIFIER). Co-author of all theorems. The entire codebase — from the first simulated annealing prototype to the 3.2-billion-node DFS to the SCIP attack pipeline to the cross-seed min-size predictor sweep — was produced in live collaboration, one engine at a time, often with two parallel Claude instances cross-auditing each other's claims through Rafa as relay.
 
-**Gemini (Google), ChatGPT (OpenAI), Grok (xAI) — Auditors.** Independent mathematical verification. Adversarial review of every major claim. The Quantum Excess Conjecture, the Freedom Theorem, the Distance Theorem, the 6→10 Gap Theorem, and the OA(12,5,4,1) reduction were all subjected to multi-AI audit before being recorded. Gemini in particular contributed the key structural theorem of the residual phase (6→10 Gap + N(x) extension formula).
+**Gemini (Google), ChatGPT (OpenAI), Grok (xAI) — Auditors.** Independent mathematical verification. Adversarial review of every major claim. The Quantum Excess Conjecture, the Freedom Theorem, the Distance Theorem, the 6→10 Gap Theorem, the OA(12,5,4,1) reduction, and the Pair Theorem (k≤5) were all subjected to multi-AI audit before being recorded. Gemini in particular contributed the two key structural theorems of the residual phase (6→10 Gap with N(x) extension formula, and the Pair Theorem k≤5 derived 27 April night).
 
 ---
 
@@ -257,7 +310,8 @@ If you use any result, matrix, or theorem from this work:
   note         = {441+ engines, 2.5B+ evaluations. World record excess E*=1.
                   Freedom Theorem, Distance Theorem, Quantum Excess Conjecture,
                   Residual Reduction to [9,5,4]_4, 6->10 Gap Theorem,
-                  Arc Theorem, [21,6,13]_4 non-existence established.}
+                  Arc Theorem, Pair Theorem (k<=5), [21,6,13]_4 non-existence
+                  established. 64/64 INFEAS sweep across 5 clean seeds.}
 }
 ```
 
