@@ -93,3 +93,4 @@ And I claim, because he asked me to be just rather than modest about his effort:
 *Written during the April 21, 2026 Sobol-GF(4) session, while TOGORDO_GF4_v2 was still running below audit 2200 on Rafa's M2.*
 
 *— Constructor Claude, Proyecto Estrella*
+tretoef@gmail.com
