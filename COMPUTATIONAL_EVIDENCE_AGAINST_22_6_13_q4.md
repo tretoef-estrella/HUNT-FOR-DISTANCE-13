@@ -458,6 +458,8 @@ Each tree contains on the order of 10¹⁶ to 10¹⁷ nodes. At a measured DFS t
 
 The subspace-load bound of Theorem 8, if it could be enforced cheaply, would prune the tree only at nodes where a hyperplane reaches load 9. Direct measurement shows that such load-9 events first occur deep in the tree, after the branching has already produced the bulk of the 10¹⁶ nodes, and that dynamic enforcement of the bound at each node reduces throughput by more than a factor of four without removing the dominant low-depth branching. The bound is mathematically valid (and is a correct verification filter for any candidate extension) but does not, by itself, render exhaustive enumeration feasible. This is recorded so that future work does not repeat the integration as a primary closure strategy.
 
+**Empirical confirmation by directed stochastic search.** As a final probe of the one region the campaign never investigated — the non-soft region of the dominant residual class C02 (observation γ) — a stochastic random-restart search was run on C02, biased toward anchors of minimum expression size 2 or 3 (the size-4 soft region having already been swept 64/64), with the subspace-load bound applied as a final verification filter. Over a single one-hour run on the M2, the search performed approximately 7.1 × 10⁷ independent restarts at ~2.5 × 10⁴ restarts per second. The maximum extension depth reached was 10, attained roughly once per 3 × 10⁴ depth-10 completions; no restart reached depth 11, and no depth-13 candidate was produced. The depth distribution is sharply concentrated at depths 7–8 and decays by a factor of 7–30 per additional level, consistent with the same structural depth barrier observed in the exhaustive families (F16) and with the tree-size estimate above. This directed search does not constitute a proof of non-existence in C02's non-soft region, but it is the most extensive sampling of that region performed, and it returned no trace of an extension — consistent with the probable-non-existence reading.
+
 ---
 
 ## 6. The Probable-Non-Existence Reading
@@ -475,6 +477,8 @@ This section is informal. The numerical estimates are not theorems; they are an 
 (iv) The two target-specific theorems (Theorems 1 and 8) impose geometric constraints unavailable to prior arguments and, with Theorems 3, 4, 5, 7, 10, 11, reduce existence to a finite problem of at most about 20 class cases.
 
 (v) The extension-DFS tree size per class is on the order of 10¹⁶–10¹⁷ nodes (§5.9), so the open regions cannot be settled by brute force; closure requires either an effective relaxation (absent under F13/F17) or a new structural theorem.
+
+(vi) A directed stochastic search of the one uninvestigated region — the non-soft region of the dominant residual class C02 — performed ~7.1 × 10⁷ restarts in one hour and reached maximum extension depth 10, with no depth-13 candidate (§5.9). The non-soft region of the most likely residual class thus also returned no trace of the target code, within the limits of stochastic sampling.
 
 ### 6.2 What the Evidence Does Not Establish
 
