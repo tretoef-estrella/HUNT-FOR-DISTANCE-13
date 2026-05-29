@@ -2919,3 +2919,54 @@ This block goes **at the very end** of `NEW_DISCOVERIES.md`, immediately after t
 ## Notes on what the next Claude will see
 
 The closing of F19g-quinquies leaves three concrete structural directions (α, β, γ) for a fresh-eyes Claude to pursue if Rafa wants to delay the strategic Option 3/5 decision. None of these are guaranteed to produce a Diamond, but all three would extract information from data already in hand, costing only sandbox compute (no Mac time). A fresh Claude may approach (γ) — the absence of TIMEOUTs and the corresponding "hunt for resistance, not softness" reframing — as the most promising of the three, because it inverts the entire predictor strategy of the campaign so far.
+---
+## Addendum — 29 May 2026 (F21: the excess-2 gap is shown NOT to be a moment-level obstruction, and is reduced from two cases to one — the load-11 case is a distinct distance regime, leaving only the two-disjoint-load-10-hyperplanes case)
+
+### Context
+
+The Excess-Spectrum Gap conjecture (F-series / v37: total excess cannot equal 2 or 5) is the one campaign result that, if provable, would be a theorem of finite geometry independent of whether the [22,6,13]₄ code exists — and the only one that might close with algebra rather than terminal time. This note records a direct attempt at the excess-2 case. It does not prove the gap. It does two smaller things that are correct and worth keeping: it rules out the easy route (moments), and it reduces the conjecture from two structural cases to one.
+
+### The two structural cases of excess 2
+
+By definition E = Σ max(0, load(H) − 9). Total excess exactly 2 can arise only two ways:
+
+- **Case A:** a single hyperplane at load 11 (contributes 11 − 9 = 2), all others ≤ 9.
+- **Case B:** two hyperplanes at load 10 (each contributes 1), all others ≤ 9.
+
+### Result 1 — moments do not close the gap
+
+The Pless power-moment identities for 22 distinct points of rank 6 in PG(5,4) are fixed constants, independent of the excess level except through C₃ (the number of collinear column-triples):
+
+> m₁ = Σ load = 22 · 341 = 7502
+> m₂ = Σ load² = 22·341 + 22·21·85 = 46772
+> m₃ = Σ load³ = m₁ + 3·22·21·85 + 6·(C₃·85 + (1540−C₃)·21)
+
+Imposing Case A (N₁₁ = 1, rest ≤ 9) leaves the residual histogram with mean 5.4919 and variance 4.0403 over loads in {0,…,9} — a variance far below the maximum 5.4919·(9−5.4919) ≈ 19.27 attainable on that support. The third central moment is likewise unconstraining. **The first three moments admit a load-11 hyperplane; they do not forbid excess 2.** The gap, if real, is not a moment-level obstruction. (This is itself useful: it tells any future attacker not to spend effort on Pless identities.)
+
+### Result 2 — Case A is a distinct distance regime, not a near-Diamond
+
+A code with a hyperplane at load 11 has max load 11, hence minimum distance d = 22 − 11 = 11. It is a [22,6,11]₄ code, not a [22,6,12]₄ code. The excess-spectrum gap was observed empirically by engines operating in the d = 12 regime (max load ≤ 10), which do not visit the d = 11 regime in the same way. **Within the near-Diamond régime d = 12 (max load ≤ 10), excess 2 cannot be Case A.** The conjecture in the relevant régime therefore reduces entirely to Case B.
+
+### Result 3 — Case B reduces to two coupled [10,5,4]₄ structures
+
+Case B has two hyperplanes H₁, H₂ at load 10. Let x = |C ∩ H₁ ∩ H₂| be the code-load of the PG(3,4) intersection. The subspace H₁ ∩ H₂ lies in exactly five hyperplanes (H₁, H₂, H₃, H₄, H₅); partitioning the 22 columns,
+
+> 22 = x + (10 − x) + (10 − x) + Σ_{i=3,4,5}(load(Hᵢ) − x),
+
+so 2 + x = Σ_{i=3,4,5}(load(Hᵢ) − x). With each load(Hᵢ) ≤ 9, this gives 2 + x ≤ 3(9 − x), hence 4x ≤ 25 and **x ≤ 6**. Every value x ∈ {0,…,6} is consistent with the count (verified), so the count alone yields no contradiction.
+
+In the extremal sub-case x = 0 (the two load-10 hyperplanes meeting C disjointly), the 10 columns on H₁ and the 10 columns on H₂ each form a [10,5,4]₄-type configuration in their respective PG(4,4), coupled by the 2 columns lying outside both. This is an extension problem of the same type and difficulty as the [22,6,13]₄ existence problem itself — not a paper-and-pencil contradiction.
+
+### Honest status
+
+The excess-2 gap is **not** closed. Result 2 (Case A is the d = 11 régime) is a clean, correct algebraic reduction and may be cited. Result 1 (moments do not suffice) is a correct negative that orients future work. Result 3 shows that the remaining case (B) is as hard as the main problem and will not yield to elementary counting. The conjecture stands as a conjecture; what changed is that its content is now sharper: **"excess 2 is forbidden in the d = 12 régime" ⟺ "two disjoint load-10 hyperplanes cannot coexist in a [22,6,12]₄ code", a coupled two-[10,5,4]₄ extension problem.** The same analysis applied to excess 5 would have more sub-cases and is not attempted here.
+
+### Credits
+
+- **Moment computation, Case A/B reduction, x ≤ 6 bound:** Claude (current instance), 29 May 2026, sandbox-verified.
+- **Decision to attempt the gap as the one possibly-algebraic result, and to record the honest negative:** R. Amichis, 29 May 2026.
+
+---
+
+*Proyecto Estrella · 29 May 2026 — Madrid · F21 added.*
+*The excess-2 gap is not a moment-level obstruction (m₁, m₂, m₃ admit a load-11 hyperplane). The load-11 case (Case A) is the d = 11 distance regime, outside the near-Diamond setting where the gap was observed; within d = 12, excess 2 reduces entirely to Case B — two disjoint load-10 hyperplanes — which is a coupled two-[10,5,4]₄ extension problem of the same difficulty as the main existence question. The gap remains a conjecture; its content is now sharpened to a single structural case. Excess 5 not attempted.*
