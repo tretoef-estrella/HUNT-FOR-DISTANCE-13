@@ -2970,3 +2970,34 @@ The excess-2 gap is **not** closed. Result 2 (Case A is the d = 11 régime) is a
 
 *Proyecto Estrella · 29 May 2026 — Madrid · F21 added.*
 *The excess-2 gap is not a moment-level obstruction (m₁, m₂, m₃ admit a load-11 hyperplane). The load-11 case (Case A) is the d = 11 distance regime, outside the near-Diamond setting where the gap was observed; within d = 12, excess 2 reduces entirely to Case B — two disjoint load-10 hyperplanes — which is a coupled two-[10,5,4]₄ extension problem of the same difficulty as the main existence question. The gap remains a conjecture; its content is now sharpened to a single structural case. Excess 5 not attempted.*
+
+**## Addendum — 21 June 2026 (F22: the FRAC residual classes B04/B05 are swept INFEAS at fiber a=1 across size-4 and size-3; the last region the residual theory flagged is now closed)
+
+F19g proved the weight-13 residuals of the near-Diamond records concentrate
+exclusively on B01/B02/B03 (clean, swept 64/64 INFEAS) and the FRAC buckets
+B04/B05/B07. The clean seeds were closed in their soft region by
+F19g-quinquies; the FRAC buckets remained untouched, deemed unreachable until
+ENUM_v4. ESTRELLA_FRAC_RESIDUAL_HUNT_v1 sidesteps ENUM_v4: it extracts the
+FRAC residual seeds directly from E4* and runs the verbatim PROBE2/SCIP
+pair-forcing attack.
+
+- E4* yields exactly two valid [9,5,4]_4 FRAC classes: (A4=51,A5=135) with
+  20 distinct supports and (A4=54,A5=120) with 12. B07 (57,117) does not
+  appear in E4*. Extraction reproduces F19g exactly (414 wt-13 codewords;
+  B02:126, B03:42, B04:60, B05:36, degenerate:150).
+- One representative per class attacked at fiber a=1: all 24 size-4 pairs
+  plus 1337 size-3 pairs.
+- **Result: 1361/1361 INFEAS, 0 FEASIBLE, 0 TIMEOUT, 0 ERROR, wall 18.4 min.**
+- B04/B05 land in the fast-INFEAS class (~0.5s/pair), unlike B02/B03.
+
+No Diamond. Combined with the 64/64 clean-seed sweep (F19g-quinquies), B12
+closed UNSAT, the depth-9 barrier (4 independent attack families) and RWB02
+reaching depth-11 without a candidate, **every region the residual theory
+flagged as a possible Diamond host has now been swept INFEAS in its soft and
+next-softest fiber.** Scope caveat: bounded to fiber a=1, sizes {4,3}; not an
+exhaustive non-existence proof. This closes the active search phase of
+Proyecto Estrella.
+
+Validation: min-size predictor reproduces F19g-ter (B02 histogram
+{1,27,324,657,15}, fiber a=1 = 15). LP formulation and SCIP parse identical
+to ESTRELLA_PORMISCOJONES_PAIR_SCIP_v1 (the engine that produced the 64/64).
