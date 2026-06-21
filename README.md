@@ -163,7 +163,14 @@ The verifier checks rank, minimum distance, total excess, weight enumerator, and
 
 **Gemini (Google DeepMind), ChatGPT (OpenAI), Grok (xAI) — auditors.** Independent mathematical verification and adversarial review of every major claim. Two of the structural theorems — the internal-load gap for excess-one codes and the subspace-load bound for the target code — originated from focused Gemini consultations and were verified line by line before being recorded.
 
----
+---**Status (21 June 2026):** Active search phase closed. World record stands at
+[22,6,12]_4, A_12=3 (excess=1, SEED_E1*). The Diamond [22,6,13]_4 was not
+found and is not proven non-existent, but every region the residual theory
+flagged — the 5 clean seeds (64/64 INFEAS) and both FRAC residual classes
+B04/B05 (F22: 1361/1361 INFEAS) — is now swept, alongside B12 (UNSAT) and the
+depth-9 barrier confirmed by 4 independent attack families. The accumulated
+computational evidence is the strongest assembled to date on the 25-year-open
+[22,6,13]_4 question.
 
 ## Citation
 
