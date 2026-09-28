@@ -1,5 +1,7 @@
 # The Hunt for Distance 13
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23011710.svg)](https://doi.org/10.5281/zenodo.23011710)
+
 **441+ search programs. 2.5 billion evaluations. 8 weeks. One laptop. Zero formal mathematical training.**
 
 In February 2026, a psychologist from Madrid who had never studied coding theory decided to attack a problem that professional mathematicians had left open for 25 years: does a [22, 6, 13]₄ linear code exist?
@@ -140,6 +142,8 @@ For the formal write-up — standard coding-theory language, full theorem statem
 
 > **[`COMPUTATIONAL_EVIDENCE_AGAINST_22_6_13_q4.md`](COMPUTATIONAL_EVIDENCE_AGAINST_22_6_13_q4.md)** — Computational Evidence Against the Existence of a [22, 6, 13]₄ Linear Code: A Report on the Proyecto Estrella Campaign (February – May 2026).
 
+The report is archived on Zenodo, together with a snapshot of this repository (commit `f391b05`): **[doi:10.5281/zenodo.23011710](https://doi.org/10.5281/zenodo.23011710)**. The DOI [10.5281/zenodo.23011709](https://doi.org/10.5281/zenodo.23011709) always points to the latest version. The report has not been refereed.
+
 ---
 
 ## Verify Everything
@@ -173,6 +177,22 @@ computational evidence is the strongest assembled to date on the 25-year-open
 [22,6,13]_4 question.
 
 ## Citation
+
+Please cite the archived report:
+
+```bibtex
+@misc{amichis2026distance13report,
+  author    = {Amichis Luengo, Rafael and Claude (Anthropic)},
+  title     = {Computational Evidence Against the Existence of a [22, 6, 13]_4 Linear Code:
+               A Report on the Proyecto Estrella Campaign (February -- May 2026)},
+  year      = {2026},
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.23011710},
+  url       = {https://doi.org/10.5281/zenodo.23011710}
+}
+```
+
+The repository itself:
 
 ```bibtex
 @misc{amichis2026distance13,
